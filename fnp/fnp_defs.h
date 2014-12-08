@@ -213,6 +213,7 @@ enum enum_ipc_funcs
     ipcShoutRx,
     ipcShoutTx,
     ipcWhisper,
+    ipcTest,
 };
 typedef enum enum_ipc_funcs ipc_funcs;
 

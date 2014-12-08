@@ -86,6 +86,8 @@ t_stat sim_instr (void)
     else
         ipc(ipcEnable, 0, 0, 0);                // start IPC beacon
     
+    //ipc(ipcTest, 0, 0, 0);
+    
     while (reason == 0)
     {                                            /* loop until ABORT */
         AIO_CHECK_EVENT;

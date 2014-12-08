@@ -55,6 +55,14 @@ UNIT ipc_unit = { UDATA (&ipc_svc, UNIT_DISABLE, 0) };
 //    { 0 }
 //};
 
+static t_stat Test (FILE *st, UNIT *uptr, int32 val, void *desc);
+
+MTAB ipc_mod[] = {
+    { MTAB_XTD|MTAB_VDV, 0, "TEST", NULL, NULL, &Test },
+    { 0 }
+};
+
+
 
 DEBTAB ipc_dbg[] = {
     {"TRACE",   DBG_TRACE  },
@@ -67,7 +75,7 @@ DEVICE ipc_dev = {
     "IPC",
     &ipc_unit,
     NULL,   //ipc_reg,
-    NULL,   //ipc_mod,
+    ipc_mod,
     1, 0, 0, 0, 0, 0,
     NULL, NULL, &ipc_reset,
     NULL,
@@ -79,6 +87,15 @@ DEVICE ipc_dev = {
     ipc_dbg
 };
 
+/*
+ * perform IPC (zyre) self-test
+ */
+static
+t_stat Test (FILE *st, UNIT *uptr, int32 val, void *desc)
+{
+    zyre_test(true);
+    return SCPE_OK;
+}
 
 /* Unit service */
 
@@ -272,10 +289,13 @@ ipc_actor (zsock_t *pipe, void *args)
     
     node = zyre_new (name);
     assert(node);
-    if (!node)
-        return;                 //  Could not create new node
+    if (!node)  //  Could not create new node
+    {
+        sim_printf("Couldn't create IPC node...\n");
+        return;
+    }
     
-    sim_printf("Starting IPC ...\n");
+    sim_printf("Starting IPC ...");
 
     if (ipc_verbose)
         zyre_set_verbose (node);  // uncomment to watch the events
@@ -289,6 +309,8 @@ ipc_actor (zsock_t *pipe, void *args)
     poller = zpoller_new (pipe, zyre_socket (node), NULL);
     assert(poller);
     
+    sim_printf(" done\n");
+
     while (!terminated)
     {
         void *which = zpoller_wait (poller, -1); // no timeout
@@ -387,7 +409,7 @@ int32 ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3)
             break;
          
         case ipcEnter:
-            sim_debug (DBG_VERBOSE, &ipc_dev, "%s has joined " STR(IPC_GROUP) "\n", arg1);
+            sim_debug (DBG_VERBOSE, &ipc_dev, "%s has entered " STR(IPC_GROUP) "\n", arg1);
             break;
             
         case ipcExit:
@@ -400,6 +422,10 @@ int32 ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3)
             
         case ipcShoutRx:
             sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
+            break;
+
+        case ipcTest:
+            zyre_test(true);
             break;
             
         default:

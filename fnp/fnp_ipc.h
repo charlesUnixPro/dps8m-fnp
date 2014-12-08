@@ -20,8 +20,8 @@
 #define IPC_GROUP    "MulticsIPC"       // name of zyre group
 
 #define IPC_FNP0     "fnp0"     // FNP A
-#define IPC_FNP2     "fnp1"     // FNP A
-#define IPC_FNP3     "fnp2"     // FNP A
-#define IPC_FNP4     "fnp3"     // FNP A
+#define IPC_FNP2     "fnp1"     // FNP B
+#define IPC_FNP3     "fnp2"     // FNP C
+#define IPC_FNP4     "fnp3"     // FNP D
 
 #endif /* defined(__fnp__fnp_ipc__) */

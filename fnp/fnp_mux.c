@@ -237,7 +237,7 @@ REG mux_reg[] =  /* */
 //    { FLDATA (MDMCTL, mux_mdm,  0) },
 //    { FLDATA (AUTODS, mux_auto, 0) },
 //    { DRDATA (POLLS, mux_polls, 32) },
-    { DRDATA (CHARRX, mux_chars_Rx, 32) },
+    { DRDATAD (CHARRX, mux_chars_Rx, 32, "Characters received on Multiplexer") },
 #if defined (SIM_ASYNCH_IO)
     { DRDATA (LATENCY, sim_asynch_latency, 32), PV_LEFT },
     { DRDATA (INST_LATENCY, sim_asynch_inst_latency, 32), PV_LEFT },
