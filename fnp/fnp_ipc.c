@@ -262,7 +262,7 @@ static zactor_t *actor = NULL;
 static zyre_t *node = 0;
 static zpoller_t *poller = 0;
 
-static bool terminated = false;
+static bool volatile terminated = false;
 
 static void
 ipc_actor (zsock_t *pipe, void *args)
@@ -292,7 +292,7 @@ ipc_actor (zsock_t *pipe, void *args)
     while (!terminated)
     {
         void *which = zpoller_wait (poller, -1); // no timeout
-        if (which == pipe)
+        if (!terminated && which == pipe)
         {
             zmsg_t *msg = zmsg_recv (which);
             if (!msg)
@@ -316,7 +316,7 @@ ipc_actor (zsock_t *pipe, void *args)
             free (command);
             zmsg_destroy (&msg);
         }
-        else if (which == zyre_socket (node))
+        else if (!terminated && which == zyre_socket (node))
         {
             zmsg_t *msg = zmsg_recv (which);
             char *event = zmsg_popstr (msg);
@@ -350,29 +350,14 @@ ipc_actor (zsock_t *pipe, void *args)
             zmsg_destroy (&msg);
         }
     }
-    
-    sim_printf("Stopping IPC ... ");
-    
-    zpoller_destroy (&poller);
-    
-    // Notify peers that this peer is shutting down. Provide
-    // a brief interval to ensure message is emitted.
-    zyre_stop(node);
-    zclock_sleep(100);
-    
-    zyre_destroy (&node);
-    
-    node = 0;
-    poller = 0;
-    
-    sim_printf("done\n");
-    
 }
 
 void killIPC()
 {
-    sim_printf("Stopping IPC ... ");
-    
+    terminated = true;                           // tell IPC actor to kill itself
+
+    zactor_destroy (&actor);
+
     zpoller_destroy (&poller);
     
     // Notify peers that this peer is shutting down. Provide
@@ -384,9 +369,6 @@ void killIPC()
     
     node = 0;
     poller = 0;
-    
-    sim_printf("done\n");
-
 }
 
 int32 ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3)
@@ -399,8 +381,9 @@ int32 ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3)
             break;
             
         case ipcDisable:
-            terminated = true;                           // tell IPC actor to kill itself
+            sim_printf("Stopping IPC ... ");
             killIPC();
+            sim_printf("done\n");
             break;
          
         case ipcEnter:
