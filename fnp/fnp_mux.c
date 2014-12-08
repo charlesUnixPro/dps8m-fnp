@@ -19,6 +19,8 @@
 
 #include "fnp_mux.h"
 
+int32   mux_chars_Rx = 0;
+
 int32   mux_brkio   = SCPE_OK ;                         /*  default I/O status code     */
 int32   mux_max     = MUX_MAX ;                         /*  max # QTY lines - user      */
                                                         /*  controllable                */
@@ -226,15 +228,16 @@ int32 mux( int32 oper, int32 oper2, int32 AC )
 
 REG mux_reg[] =  /* */
 {
-    { ORDATA (PC, saved_PC, 32) },
-    { ORDATA (BUF, mux_unit.buf, 8) },
-    { FLDATA (BUSY, mux_busy, FNP_INT_V_MUX) },
-    { FLDATA (DONE, mux_done, FNP_INT_V_MUX) },
-    { FLDATA (DISABLE, mux_disable, FNP_INT_V_MUX) },
-    { FLDATA (INT, mux_int_req, FNP_INT_V_MUX) },
-    { FLDATA (MDMCTL, mux_mdm,  0) },
-    { FLDATA (AUTODS, mux_auto, 0) },
-    { DRDATA (POLLS, mux_polls, 32) },
+//    { ORDATA (PC, saved_PC, 32) },
+//    { ORDATA (BUF, mux_unit.buf, 8) },
+//    { FLDATA (BUSY, mux_busy, FNP_INT_V_MUX) },
+//    { FLDATA (DONE, mux_done, FNP_INT_V_MUX) },
+//    { FLDATA (DISABLE, mux_disable, FNP_INT_V_MUX) },
+//    { FLDATA (INT, mux_int_req, FNP_INT_V_MUX) },
+//    { FLDATA (MDMCTL, mux_mdm,  0) },
+//    { FLDATA (AUTODS, mux_auto, 0) },
+//    { DRDATA (POLLS, mux_polls, 32) },
+    { DRDATA (CHARRX, mux_chars_Rx, 32) },
 #if defined (SIM_ASYNCH_IO)
     { DRDATA (LATENCY, sim_asynch_latency, 32), PV_LEFT },
     { DRDATA (INST_LATENCY, sim_asynch_inst_latency, 32), PV_LEFT },

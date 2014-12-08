@@ -43,8 +43,9 @@ t_stat OnMuxStalled(int line, int kar)
  */
 t_stat OnMuxRx(int line, int kar)
 {
-    sim_printf("Rx: line:%d '%c'\n", line, kar);
-
+    //sim_printf("Rx: line:%d '%c'\n", line, kar);
+    mux_chars_Rx += 1;
+    
     MuxWrite(line, kar);
     
     return SCPE_OK;

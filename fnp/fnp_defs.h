@@ -19,6 +19,8 @@
 
 #define MUX_MAX     64                          /*  max number of FNP lines - hardware  */
 
+#define SCP_QUIT        SCPC_OK + 1
+
 #define MUX_S_RI        0x8000                          /*  Receiver Interrupt          */
 #define MUX_S_TI        0x4000                          /*  Transmitter interrupt       */
 #define MUX_S_LMASK     0x3F00                          /*  line mask                   */
@@ -192,7 +194,7 @@ t_stat OnTTI(int iodata);
 
 extern int32 mux_tmxr_poll;                                /* tmxr poll */
 extern int32 mux_int_req, mux_busy, mux_done, mux_disable;
-extern int32 saved_PC;
+extern int32 mux_chars_Rx;   //saved_PC;
 
 extern int32 ipc_enable, ipc_verbose, ipc_trace;
 

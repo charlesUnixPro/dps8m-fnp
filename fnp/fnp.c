@@ -25,11 +25,11 @@
 
 char sim_name[] = "FNP (Multics Faux FNP)";
 
-int32 saved_PC = 0;
+//int32 saved_PC = 0;
 int32 sim_emax = 1;
 
 const char *sim_stop_messages[] = {
-    "Unknown error",
+    "Quit",
     "Unknown error",
     "Unknown error",
     "Unknown error",
