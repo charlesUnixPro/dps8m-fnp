@@ -17,6 +17,9 @@ t_stat OnMuxConnect(TMLN *tmnl, int line)
 {
     sim_printf("CONNECT %d\n", line);
     
+    char *p = "HSLA Port? ";
+    tmxr_linemsgf (tmnl, "%s", p);
+    
     return SCPE_OK;
 }
 
@@ -33,7 +36,8 @@ t_stat OnMuxDisconnect(int line, int kar)
 
 t_stat OnMuxStalled(int line, int kar)
 {
-    sim_printf("STALLED %d\n", line);
+    
+    sim_printf("STALLED %d (%c)\n", line, kar);
     
     return SCPE_OK;
 }

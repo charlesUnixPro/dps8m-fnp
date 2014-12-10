@@ -128,6 +128,9 @@ static void parse_ti(char *raw)
     char *tok;
     while ((tok = Strsep(bp, ";\r\n")))
     {
+        if (strlen(tok) == 0)
+            continue;
+        
         sim_printf("tok = `%s'\n", tok);
         // now according to ':'
         
@@ -136,7 +139,7 @@ static void parse_ti(char *raw)
         char *tok2;
 
         while ((tok2 = Strsep(bp2, ":")))
-            sim_printf("    tok2 = `%s'\n", tok2);
+            sim_printf("    tok2 = `%s'\n", trim(tok2));
         
         free(buf2);
     }

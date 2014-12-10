@@ -628,7 +628,7 @@ DEVICE mux_dev = {
 
 t_stat  mux_reset(DEVICE *dptr)
 {
-    DIB *dibp = &mux_dib;
+    //DIB *dibp = &mux_dib;
     UNIT *unitp = &mux_unit;
     
 //    if ((dptr->flags & DEV_DIS) == 0)

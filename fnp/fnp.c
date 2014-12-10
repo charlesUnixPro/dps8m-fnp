@@ -62,9 +62,12 @@ t_stat parse_sym (char *cptr, t_addr addr, UNIT *uptr, t_value *val, int32 sw)
     return SCPE_OK;
 }
 
+void parseTI();
 
 t_stat sim_instr (void)
 {
+    parseTI();
+
     /* Main instruction fetch/decode loop: check clock queue, intr, trap, bkpt */
     int reason = 0;
     int32 n = 0;
