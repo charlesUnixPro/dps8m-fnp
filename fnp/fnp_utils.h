@@ -31,6 +31,8 @@ char *rtrim(char *s);
 char *strexp(char *, char *);
 char *strexpP(char *, char *);
 
+char *Strtok(char *, char *);
+
 char *Strdup(char *s, int size);
 char *strrev(char *s);
 int strcpyWhile(char *dst, char *src, int (*f)(int));

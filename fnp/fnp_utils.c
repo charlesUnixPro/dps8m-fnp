@@ -314,7 +314,7 @@ Strtok(char *line, char *sep)
     
     char *q;			/*!< beginning of current field			*/
     
-    if (line) {			/* 1st invocatio						*/
+    if (line) {			/* 1st invocation						*/
         p = line;
         state = NORMAL;
     }

@@ -13,9 +13,10 @@
 
 #include "fnp_defs.h"
 
-struct terminfo
+struct muxtermio
 {
-    struct multics
+    char *raw;
+    struct
     {
         char *name;     // Multics device name
         char *baud;     // baud rate
@@ -23,8 +24,12 @@ struct terminfo
         char *terminal_type;
         char *attributes;
         char *initial_command;
-    };
+    } multics;
+    int mux_line;       // multiplexor line used for this terminal (-1 == unused)
+    char buffer[1024];  // line buffer for initial device selection
     char *uti;          // UNIX terminfo terminal type
 };
+
+typedef struct muxtermio MUXTERMIO;
 
 #endif /* defined(__fnp__fnp_2__) */

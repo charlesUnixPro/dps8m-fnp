@@ -10,6 +10,9 @@
 
 #include "fnp_1.h"
 
+char *
+getPortList();
+
 /*
  * called when a MUX line in connected to a telnet client ...
  */
@@ -17,8 +20,7 @@ t_stat OnMuxConnect(TMLN *tmnl, int line)
 {
     sim_printf("CONNECT %d\n", line);
     
-    char *p = "HSLA Port? ";
-    tmxr_linemsgf (tmnl, "%s", p);
+    tmxr_linemsgf (tmnl, "HSLA Port (%s)? ", getPortList());
     
     return SCPE_OK;
 }
