@@ -844,7 +844,7 @@ DISPLAYD = display
 
 FNPLDFLAGS = -lzmq -lczmq -lzyre
 FNPD = fnp
-FNP = ${FNPD}/fnp.c ${FNPD}/fnp_mux.c ${FNPD}/fnp_clk.c ${FNPD}/fnp_tt.c ${FNPD}/fnp_1.c ${FNPD}/fnp_ipc.c
+FNP = ${FNPD}/fnp.c ${FNPD}/fnp_2.c ${FNPD}/fnp_utils.c ${FNPD}/fnp_mux.c ${FNPD}/fnp_clk.c ${FNPD}/fnp_tt.c ${FNPD}/fnp_1.c ${FNPD}/fnp_ipc.c
 FNP_OPT = -DVM_FNP -DUSE_INT64 -I ${FNPD} 
 
 
