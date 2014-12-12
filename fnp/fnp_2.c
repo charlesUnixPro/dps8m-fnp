@@ -64,23 +64,7 @@ baud:               1200;
 comment:            "cable 57073, TYMNET, prot 61.";
 #endif
 
-//struct terminf
-//{
-//    struct
-//    {
-//        char *raw;
-//        char *name;     // Multics device name
-//        char *baud;     // baud rate
-//        char *comment;  // comment
-//        char *terminal_type;
-//        char *attributes;
-//        char *initial_command;
-//    } multics;
-//    char *uti;          // UNIX terminfo terminal type
-//};
-
-
-MUXTERMIO ti[] = {
+FMTI fmti[] = {
 {
     "name:  d.h002;"
     "baud:               auto;"
@@ -132,7 +116,7 @@ MUXTERMIO ti[] = {
 };
 
 
-void dumpMUXTERMIO(MUXTERMIO *p)
+void dumpFMTI(FMTI *p)
 {
     if (!p)
         return;
@@ -150,7 +134,7 @@ void dumpMUXTERMIO(MUXTERMIO *p)
 #define FREE(t)     \
     if (t) free(t)
 
-void freeMUXTERMIO(MUXTERMIO *p)
+void freeFMTI(FMTI *p)
 {
     if (!p)
         return;
@@ -166,13 +150,14 @@ void freeMUXTERMIO(MUXTERMIO *p)
     FREE(p->uti);
 }
 
-static void parse_ti(char *raw, MUXTERMIO *ti)
+static void parse_ti(char *raw, FMTI *ti)
 {
-    memset(ti, 0, sizeof(MUXTERMIO));
-    ti->mux_line = -1;
+    memset(ti, 0, sizeof(FMTI));
     
     // 1st extract according to ';'
     char *buf = strdup(raw);
+    ti->raw = buf;
+    
     char **bp = &buf;
     char *tok;
     while ((tok = Strsep(bp, "\n")))
@@ -199,6 +184,7 @@ static void parse_ti(char *raw, MUXTERMIO *ti)
                 sim_printf("malformed entry '%s'\n", tok2);
                 continue;
             }
+            
             char *t = strdup(tok2);
 
             char *first = Strtok(t, ":");
@@ -226,23 +212,114 @@ static void parse_ti(char *raw, MUXTERMIO *ti)
         
         free(buf2);
     }
-    free(buf);
 }
 
-void parseTI()
+int32 parseTI()
 {
-    MUXTERMIO *t = ti;
+    FMTI *t = fmti;
+    int n = 0;
+    
     while (t->raw)
     {
         parse_ti(t->raw, t);
         
-        dumpMUXTERMIO(t);
+        dumpFMTI(t);
         t++;
+        n++;
     }
+    
+    return n;
 }
 
 char *
 getPortList()
 {
-    return "1,2,3,4,5";
+    static char buf[2048];
+    strcat(buf, "");
+    
+    FMTI *t = fmti;
+    while (t->raw)
+    {
+        if (t->inUse == false)
+        {
+            if (strlen(buf) > 0)
+                strcat(buf, ",");
+            strcat(buf, t->multics.name);
+        }
+        t++;
+    }
+    return buf;
+}
+
+MUXTERMIO ttys[MUX_MAX];
+
+int32 processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar)
+{
+    if (kar == '\e' || kar == 0x03)             // ESCape ('\e') | ^C
+    {
+        char n[132];
+        snprintf(n, sizeof(n), "%d", line);
+        
+        tmxr_dscln(&mux_unit, 0, n, mp);        // disconnect line
+        memset(tty, 0, sizeof(typeof(*tty)));   // clear tty struct
+        
+        return 0;
+    }
+    
+    // buffer too full for anything more?
+    if (tty->nPos >= sizeof(tty->buffer))
+    {
+        // yes. Only allow \n, \r, ^H
+        switch (kar)
+        {
+            case '\b':  // backspace
+            case 127:   // delete
+                tmxr_linemsg(tmln, "\b \b");    // remove char from line
+                tty->buffer[tty->nPos] = 0;     // remove char from buffer
+                tty->nPos -= 1;                 // back up buffer pointer
+                break;
+                
+            case '\n':
+            case '\r':
+                tty->buffer[tty->nPos] = 0;
+                return 0;
+
+            default:
+                break;
+        }
+        return 0;
+    }
+
+    if (isprint(kar))   // printable?
+    {
+        MuxWrite(line, kar);
+        tty->buffer[tty->nPos++] = kar;
+        return 0;
+    } else {
+        switch (kar)
+        {
+            case '\b':  // backspace
+            case 127:   // delete
+                if (tty->nPos > 0)
+                {
+                    tmxr_linemsg(tmln, "\b \b");    // remove char from line
+                    tty->buffer[tty->nPos] = 0;     // remove char from buffer
+                    tty->nPos -= 1;                 // back up buffer pointer
+                    break;
+                } else {
+                    tmxr_linemsg(tmln, "\a");
+                    return 0;
+                }
+                
+            case '\n':
+            case '\r':
+                tty->buffer[tty->nPos++] = 0;
+                return 0;
+            default:
+                break;
+        }
+
+    }
+    
+    return 0;
 }

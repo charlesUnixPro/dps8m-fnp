@@ -180,7 +180,7 @@ int32 mux( int32 pulse, int32 code, int32 AC );
 
 t_stat OnMuxConnect(TMLN *m, int line);
 t_stat OnMuxDisconnect(int line, int kar);
-t_stat OnMuxRx(int line, int kar);
+t_stat OnMuxRx(TMXR *tmxr, TMLN *tmln, int line, int kar);
 t_stat OnMuxRxBreak(int line, int kar);
 t_stat OnMuxStalled(int line, int kar);
 

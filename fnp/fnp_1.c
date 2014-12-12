@@ -9,6 +9,9 @@
 #include "fnp_defs.h"
 
 #include "fnp_1.h"
+#include "fnp_2.h"
+
+extern MUXTERMIO ttys[MUX_MAX];
 
 char *
 getPortList();
@@ -21,6 +24,9 @@ t_stat OnMuxConnect(TMLN *tmnl, int line)
     sim_printf("CONNECT %d\n", line);
     
     tmxr_linemsgf (tmnl, "HSLA Port (%s)? ", getPortList());
+    
+    ttys[line].mux_line = line;
+    ttys[line].state = eInput;      // waiting for user input
     
     return SCPE_OK;
 }
@@ -47,12 +53,31 @@ t_stat OnMuxStalled(int line, int kar)
 /*
  * called when a character is received on a MUX line ...
  */
-t_stat OnMuxRx(int line, int kar)
+t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
 {
     //sim_printf("Rx: line:%d '%c'\n", line, kar);
     mux_chars_Rx += 1;
     
-    MuxWrite(line, kar);
+    
+    
+    MUXTERMIO *tty = &ttys[line]; // fetch tty connection info
+    switch (tty->state)
+    {
+        case eDisconnected:
+            break;
+        case eInput:
+            switch (processUserInput(mp, tmln, tty, line, kar))
+            {
+                default:
+                    break;
+            }
+            break;
+        case ePassThrough:
+            MuxWrite(line, kar);
+            break;
+        default:
+            break;
+    }
     
     return SCPE_OK;
 }

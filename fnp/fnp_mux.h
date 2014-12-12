@@ -11,4 +11,7 @@
 
 #include <stdio.h>
 
+t_stat mux_setnl( UNIT * uptr, int32 val, char * cptr, void * desc );
+
+
 #endif /* defined(__fnp__fnp_mux__) */

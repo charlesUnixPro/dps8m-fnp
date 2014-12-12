@@ -18,6 +18,7 @@
 #include "fnp_defs.h"
 
 #include "fnp_mux.h"
+#include "fnp_2.h"
 
 int32   mux_chars_Rx = 0;
 
@@ -262,6 +263,7 @@ MTAB mux_mod[] =
     { 0 }
 } ;
 
+extern MUXTERMIO ttys[MUX_MAX];
 
 REG *sim_PC = &mux_reg[0];
 
@@ -297,6 +299,9 @@ t_stat mux_attach(UNIT *unitp, char *cptr)
         mux_status[ a ] = (MUX_L_RXE | MUX_L_TXE) ;
     }
     sim_activate( unitp, mux_tmxr_poll ) ;
+    
+    memset(ttys, 0, sizeof(ttys));  // resetttys structure
+           
     return ( SCPE_OK ) ;
 }
 
@@ -479,7 +484,7 @@ int mux_update_rcvi( TMXR * mp )
                 {
                     datum = datum & 0x00FF ;
                     
-                    OnMuxRx(line, datum);
+                    OnMuxRx(mp, lp, line, datum);
                 }
                 /*  <check parity, masking, forced parity, CR/LF xlation>  */
                 

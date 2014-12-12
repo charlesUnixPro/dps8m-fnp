@@ -11,6 +11,7 @@
 #include "sim_tmxr.h"
 
 #include "fnp_defs.h"
+#include "fnp_2.h"
 
 
 /* SCP data structures and interface routines
@@ -62,11 +63,13 @@ t_stat parse_sym (char *cptr, t_addr addr, UNIT *uptr, t_value *val, int32 sw)
     return SCPE_OK;
 }
 
-void parseTI();
+extern MUXTERMIO ttys[MUX_MAX];
+
+int32 parseTI();
 
 t_stat sim_instr (void)
 {
-    parseTI();
+    int32 nTTYdevs = parseTI();
 
     /* Main instruction fetch/decode loop: check clock queue, intr, trap, bkpt */
     int reason = 0;
@@ -79,7 +82,9 @@ t_stat sim_instr (void)
     UNIT *u = &mux_unit;
     if (u->filename == NULL || strlen(u->filename) == 0)
         sim_printf("Warning: MUX not attached.\n");
- 
+    //else
+    //    mux_desc.lines = nTTYdevs;
+    
     ipc_enable = !(ipc_dev.flags & DEV_DIS);
     
     ipc_verbose = (ipc_dev.dctrl & DBG_VERBOSE) && sim_deb;
