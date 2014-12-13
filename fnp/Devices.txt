@@ -43,7 +43,7 @@ name:               d.h015;
 baud:               9600;
 comment:            "cable 71688, Rm 254, hardwired VIP7802, PMDC.";
 terminal_type:      VIP7801;
-attributes:         "hardwired, dont_read_answerback;"
+attributes:         "hardwired, dont_read_answerback";
 initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
 
 name:               d.h022;

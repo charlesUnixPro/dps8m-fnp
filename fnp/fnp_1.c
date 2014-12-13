@@ -40,7 +40,7 @@ t_stat OnMuxDisconnect(int line, int kar)
     sim_printf("DISCONNECT %d\n", line);
 
     MUXTERMIO *tty = &ttys[line];   // fetch tty connection info
-    tty->mux_line = -1;             // line no linger connected
+    tty->mux_line = -1;             // line no longer connected
     tty->state = eDisconnected;
     if (tty->fmti)
         tty->fmti->inUse = false;   // multics device no longer in use
@@ -91,7 +91,7 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
                     }
                     else
                     {
-                        tmxr_linemsgf (tmln, "\r\nDevice <%s> not found. Please re-enter.", tty->buffer);
+                        tmxr_linemsgf (tmln, "\r\nDevice <%s> not available. Please re-enter.", tty->buffer);
                         tmxr_linemsgf (tmln, "\r\nHSLA Port (%s)? ", getDevList());
                         
                         // reset input buffer

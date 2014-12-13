@@ -10,6 +10,8 @@
 
 #include "fnp_utils.h"
 
+FMTI *fmti = NULL;
+
 #ifdef COMMENT
 On Tue, Dec 9, 2014 at 1:58 PM, Harry Reed <doon386@cox.net> wrote:
 
@@ -64,58 +66,6 @@ baud:               1200;
 comment:            "cable 57073, TYMNET, prot 61.";
 #endif
 
-FMTI fmti[] = {
-{
-    "name:  d.h002;"
-    "baud:               auto;"
-    "comment:            \"cable 12319, X-6400, Vadic VA3467.\";"
-},
-{
-    "name: d.h006;"
-    "baud:               9600;"
-    "comment:            \"Define a 60ma current loop.\";"
-    "terminal_type:      VIP7801;"
-    "attributes:         hardwired, dont_read_answerback;"
-    "initial_command:    \"modes echoplex,^tabs,tabecho,crecho,lfecho\";"
-},
-{
-    "name: d.h012-d.h013;"
-    "baud:               2400;"
-    "comment:            \"hardwired to service system channels c.h212,3.\";"
-    "terminal_type:      VIP7801;"
-    "attributes:         hardwired, dont_read_answerback;"
-    "initial_command:    \"modes echoplex,^tabs,tabecho,crecho,lfecho\";"
-},
-{
-    "name: d.h014;"
-    "baud:               9600;"
-    "comment:            \"cable 72012, Rm 254, hardwired VIP7801, PMDC\";"
-    "terminal_type:      VIP7801;"
-    "attributes:         hardwired, dont_read_answerback;"
-    "initial_command:    \"modes echoplex,^tabs,tabecho,crecho,lfecho\";"
-},
-{
-    "name: d.h015;"
-    "baud:               9600;"
-    "comment:            \"cable 71688, Rm 254, hardwired VIP7802, PMDC.\";"
-    "terminal_type:      VIP7801;"
-    "attributes:         hardwired, dont_read_answerback;"
-    "initial_command:    \"modes echoplex,^tabs,tabecho,crecho,lfecho\";"
-},
-{
-    "name: d.h022;"
-    "baud:               1200;"
-    "comment:            \"cable 57070, TYMNET, port 60.\";"
-},
-{
-    "name: d.h023;"
-    "baud:               1200;"
-    "comment:            \"cable 57073, TYMNET, prot 61.\";"
-},
-{ 0 }
-};
-
-
 void dumpFMTI(FMTI *p)
 {
     if (!p)
@@ -154,22 +104,54 @@ char *ToString(FMTI *p, int line)
 #define FREE(t)     \
     if (t) free(t)
 
-void freeFMTI(FMTI *p)
+void freeFMTI(FMTI *p, bool bRecurse)
 {
     if (!p)
         return;
     
-    FREE(p->multics.name);
+    if (bRecurse)
+    {
+        while (p)
+        {
+            FREE(p->multics.name);
+        
+            FREE(p->multics.baud);
+            FREE(p->multics.terminal_type);
+            FREE(p->multics.attributes);
+            FREE(p->multics.initial_command);
+            FREE(p->multics.comment);
+        
+            FREE(p->uti);
+            FMTI *nxt = p->next;
+            
+            FREE(p);
+            
+            p = nxt;
+        }
+
+    } else {
     
-    FREE(p->multics.baud);
-    FREE(p->multics.terminal_type);
-    FREE(p->multics.attributes);
-    FREE(p->multics.initial_command);
-    FREE(p->multics.comment);
+        FREE(p->multics.name);
     
-    FREE(p->uti);
+        FREE(p->multics.baud);
+        FREE(p->multics.terminal_type);
+        FREE(p->multics.attributes);
+        FREE(p->multics.initial_command);
+        FREE(p->multics.comment);
+    
+        FREE(p->uti);
+        
+        FREE(p);
+    }
+    
 }
 
+FMTI *newFMTI()
+{
+    return calloc(1, sizeof(FMTI));
+}
+
+#if COMMENT
 static void parse_ti(char *raw, FMTI *ti)
 {
     memset(ti, 0, sizeof(FMTI));
@@ -250,6 +232,7 @@ int32 parseTI()
     
     return n;
 }
+#endif
 
 char *
 getDevList()
@@ -258,7 +241,7 @@ getDevList()
     strcpy(buf, "");
     
     FMTI *t = fmti;
-    while (t->raw)
+    while (t)
     {
         if (t->inUse == false)
         {
@@ -266,22 +249,22 @@ getDevList()
                 strcat(buf, ",");
             strcat(buf, t->multics.name);
         }
-        t++;
+        t = t->next;
     }
     return buf;
 }
 
 FMTI *searchForDevice(char *dev)
 {
-    sim_printf("looking for <%s>\n", dev);
+    //sim_printf("looking for <%s>\n", dev);
     
     FMTI *t = fmti;
-    while (t->raw)
+    while (t)
     {
         if (t->inUse == false)
             if (strcmp(dev, t->multics.name) == 0)
                 return t;
-        t++;
+        t = t->next;
     }
 
     return NULL;
@@ -371,4 +354,72 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
     }
     
     return eInput;  // stay in input mode
+}
+
+FMTI * readDev(FILE *src)
+{
+    char buff[1024];
+
+    FMTI *head = NULL;      // head of linked list
+    FMTI *current = NULL;   // currrent entry (tail)
+
+    while (fgets(buff, sizeof(buff), src))
+    {
+        char *p = trim(buff);   // trim leading and trailing whitespace
+        
+        if (p[0] == '#')        // a '#' as first non-white charater is a comment line
+            continue;
+        
+        if (p[0] == 0)          // blank line
+            continue;;
+        
+        if (strncmp(p, "name:", 5) == 0)
+        {
+            if (!head)
+            {
+                head = newFMTI();
+                current = head;
+            } else {
+                current->next = newFMTI();
+                current = current->next;
+            }
+        }
+    
+        char *first  = trim(Strtok(p, ":"));       // stuff to the left of ':'
+        char *second = trim(Strtok(NULL, ":;"));    // stuff to the right of ':'
+        
+        //sim_printf("%s %s\n", first, second);
+        
+        if (strcmp(first, "name") == 0)
+            current->multics.name = strdup(trim(second));
+        else if (strcmp(first, "baud") == 0)
+            current->multics.baud  = strdup(trim(second));
+        else if (strcmp(first, "comment") == 0)
+            current->multics.comment  = strdup(trim(second));
+        else if (strcmp(first, "terminal_type") == 0)
+            current->multics.terminal_type  = strdup(trim(second));
+        else if (strcmp(first, "attributes") == 0)
+            current->multics.attributes  = strdup(trim(second));
+        else if (strcmp(first, "initial_command") == 0)
+            current->multics.initial_command  = strdup(trim(second));
+        else
+            sim_printf("Unknown entry '%s'\n", first);
+    }
+    
+    return head;
+}
+
+FMTI *readAndParse(char *file)
+{
+    FILE *in = fopen(file, "r");
+    FMTI *p = readDev(in);
+    fclose(in);
+    
+    while (p)
+    {
+        dumpFMTI(p);
+        p = p->next;
+    }
+    
+    return p;
 }

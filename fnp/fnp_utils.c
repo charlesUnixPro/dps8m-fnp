@@ -45,7 +45,8 @@ char *rtrim(char *s)
 {
     int index;
     
-    for (index = (int)strlen(s) - 1; index >= 0 && (s[index] == ' ' || s[index] == '\t'); index--)
+    //for (index = (int)strlen(s) - 1; index >= 0 && (s[index] == ' ' || s[index] == '\t'); index--)
+    for (index = (int)strlen(s) - 1; index >= 0 && isspace(s[index]); index--)
     {
         s[index] = '\0';
     }
@@ -61,7 +62,8 @@ char *ltrim(char *s)
     if (s == NULL)
         return NULL;
     
-    for (p = s; (*p == ' ' || *p == '\t') && *p != '\0'; p++)
+    //for (p = s; (*p == ' ' || *p == '\t') && *p != '\0'; p++)
+    for (p = s; isspace(*p) && *p != '\0'; p++)
         ;
     
     //strcpy(s, p);

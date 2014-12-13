@@ -38,8 +38,9 @@ struct fauxMulticsTerminalInfo
     } multics;
     char    *uti;         // UNIX terminfo terminal type
     bool    inUse;        // True if device is being used
+    
+    struct fauxMulticsTerminalInfo  *next;
 };
-
 typedef struct fauxMulticsTerminalInfo FMTI;
 
 struct muxtermio

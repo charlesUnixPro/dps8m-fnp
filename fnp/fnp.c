@@ -47,13 +47,54 @@ DEVICE *sim_devices[] =
     NULL
 };
 
+FMTI *readAndParse(char *file);
+FMTI *readDev(FILE *);
+
+void dumpFMTI(FMTI *);
+
+void freeFMTI(FMTI *p, bool bRecurse);
+
+extern FMTI *fmti;
+
 t_stat sim_load (FILE *fileref, char *cptr, char *fnam, int flag)
 {
+    if (flag == 1)
+        return SCPE_OK;
+    
+    //readAndParse(fnam);
+    
+    FMTI *p = readDev(fileref);
+ 
+    if (sim_switches & SWMASK ('V'))  /* verbose? */
+    {
+        sim_printf("Faux Multices devices loaded ...\n");
+        while (p)
+        {
+            dumpFMTI(p);
+            p = p->next;
+        }
+    }
+    
+    if (sim_switches & SWMASK ('A'))  /* append? */
+    {
+        if (fmti)
+        {
+            FMTI *q = fmti;
+            while (q->next)
+                q = q->next;
+            q->next = p;
+        } else
+            fmti = p;
+    } else {
+        if (fmti)
+            freeFMTI(fmti, true);
+        fmti = p;
+    }
+    
     return SCPE_OK;
 }
 
-t_stat fprint_sym (FILE *of, t_addr addr, t_value *val,
-                   UNIT *uptr, int32 sw)
+t_stat fprint_sym (FILE *of, t_addr addr, t_value *val, UNIT *uptr, int32 sw)
 {
     return SCPE_OK;
 }
@@ -65,12 +106,10 @@ t_stat parse_sym (char *cptr, t_addr addr, UNIT *uptr, t_value *val, int32 sw)
 
 extern MUXTERMIO ttys[MUX_MAX];
 
-int32 parseTI();
 
 t_stat sim_instr (void)
 {
-    int32 nTTYdevs = parseTI();
-
+    
     /* Main instruction fetch/decode loop: check clock queue, intr, trap, bkpt */
     int reason = 0;
     int32 n = 0;
@@ -101,13 +140,6 @@ t_stat sim_instr (void)
         AIO_CHECK_EVENT;
         
         int32 temp = sim_poll_kbd ();
-        //if (temp < SCPE_KFLAG)
-        //    return temp;
-        
-        //if (temp & SCPE_BREAK)                                  /* ignore break */
-        //    return SCPE_OK;
-        
-        //if (temp )sim_printf("%d\n", temp);
         if ((temp & 0xff) == 'q')
             reason = SCPE_BREAK;
         
