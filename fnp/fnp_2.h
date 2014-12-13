@@ -18,7 +18,8 @@ enum muxtermstate
 {
     eDisconnected = 0,  // disconnected
     eInput,             // waiting for user input
-    ePassThrough        // passthought mode
+    ePassThrough,       // passthought mode
+    eEndOfLine,         // EOL detected during user input (\r or \n)
 };
 
 typedef enum muxtermstate MUXTERMSTATE;
@@ -43,16 +44,16 @@ typedef struct fauxMulticsTerminalInfo FMTI;
 
 struct muxtermio
 {
-    FMTI        *fmti;
-    int32       mux_line;    // multiplexor line# used for this terminal (-1 == unused)
-    TMLN        *tmln;         // terminal line
-    char        buffer[1024];  // line buffer for initial device selection
-    int32       nPos;          // position where *next* user input is to be stored
+    FMTI        *fmti;          // multics device attached to this line
+    int32       mux_line;       // multiplexor line# used for this terminal (-1 == unused)
+    TMLN        *tmln;          // terminal line
+    char        buffer[1024];   // line buffer for initial device selection
+    int32       nPos;           // position where *next* user input is to be stored
     MUXTERMSTATE state;         // state of tty (eDisconnected, eInput ePassThrough)
 };
 
 typedef struct muxtermio MUXTERMIO;
 
-int32 processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar);
+MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar);
 
 #endif /* defined(__fnp__fnp_2__) */

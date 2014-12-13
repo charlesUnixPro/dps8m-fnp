@@ -131,6 +131,26 @@ void dumpFMTI(FMTI *p)
     
 }
 
+char *ToString(FMTI *p, int line)
+{
+    if (!p)
+        return "";
+    static char str[1024];
+    const int len = sizeof(str);
+    
+    snprintf(str, len,
+    "\r\nLine %d connected as\r\n"
+    "name:            %s\r\n"
+    "baud:            %s\r\n"
+    "terminal_type:   %s\r\n"
+    "attributes:      %s\r\n"
+    "initial_command: %s\r\n"
+    "comment:         %s\r\n"
+    "\n", line, p->multics.name,  p->multics.baud , p->multics.terminal_type , p->multics.attributes, p->multics.initial_command, p->multics.comment);
+    
+    return str;
+}
+
 #define FREE(t)     \
     if (t) free(t)
 
@@ -223,7 +243,7 @@ int32 parseTI()
     {
         parse_ti(t->raw, t);
         
-        dumpFMTI(t);
+        //dumpFMTI(t);
         t++;
         n++;
     }
@@ -232,10 +252,10 @@ int32 parseTI()
 }
 
 char *
-getPortList()
+getDevList()
 {
     static char buf[2048];
-    strcat(buf, "");
+    strcpy(buf, "");
     
     FMTI *t = fmti;
     while (t->raw)
@@ -251,19 +271,35 @@ getPortList()
     return buf;
 }
 
+FMTI *searchForDevice(char *dev)
+{
+    sim_printf("looking for <%s>\n", dev);
+    
+    FMTI *t = fmti;
+    while (t->raw)
+    {
+        if (t->inUse == false)
+            if (strcmp(dev, t->multics.name) == 0)
+                return t;
+        t++;
+    }
+
+    return NULL;
+}
+
 MUXTERMIO ttys[MUX_MAX];
 
-int32 processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar)
+MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar)
 {
-    if (kar == '\e' || kar == 0x03)             // ESCape ('\e') | ^C
+    if (kar == 0x1b || kar == 0x03)             // ESCape ('\e') | ^C
     {
         char n[132];
         snprintf(n, sizeof(n), "%d", line);
         
-        tmxr_dscln(&mux_unit, 0, n, mp);        // disconnect line
-        memset(tty, 0, sizeof(typeof(*tty)));   // clear tty struct
+        tmxr_dscln(&mux_unit, !0, n, mp);       // disconnect line
+        memset(tty, 0, sizeof(MUXTERMIO));      // clear tty struct
         
-        return 0;
+        return eDisconnected;                   // request line disconnect
     }
     
     // buffer too full for anything more?
@@ -282,19 +318,24 @@ int32 processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 k
             case '\n':
             case '\r':
                 tty->buffer[tty->nPos] = 0;
-                return 0;
+                return eEndOfLine;              // EOL found
 
+            case 0x12:  // ^R
+                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
+                tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
+                tmxr_linemsg  (tmln, tty->buffer);
+                break;
+                
             default:
                 break;
         }
-        return 0;
+        return eInput;  // stay in input mode
     }
 
     if (isprint(kar))   // printable?
     {
         MuxWrite(line, kar);
         tty->buffer[tty->nPos++] = kar;
-        return 0;
     } else {
         switch (kar)
         {
@@ -305,21 +346,29 @@ int32 processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 k
                     tmxr_linemsg(tmln, "\b \b");    // remove char from line
                     tty->buffer[tty->nPos] = 0;     // remove char from buffer
                     tty->nPos -= 1;                 // back up buffer pointer
-                    break;
-                } else {
+                } else
                     tmxr_linemsg(tmln, "\a");
-                    return 0;
-                }
+                
+                break;
                 
             case '\n':
             case '\r':
-                tty->buffer[tty->nPos++] = 0;
-                return 0;
+                tty->buffer[tty->nPos] = 0;
+                return eEndOfLine;
+                
+            case 0x12:  // ^R
+                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
+                tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
+                tty->buffer[tty->nPos] = 0;
+                tmxr_linemsg  (tmln, tty->buffer);
+                break;
+
+                
             default:
                 break;
         }
 
     }
     
-    return 0;
+    return eInput;  // stay in input mode
 }
