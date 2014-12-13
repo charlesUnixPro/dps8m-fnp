@@ -92,7 +92,7 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
                     else
                     {
                         tmxr_linemsgf (tmln, "\r\nDevice <%s> not found. Please re-enter.", tty->buffer);
-                        tmxr_linemsgf (tmln, "\r\nHSLA Port (%s)? ", getPortList());
+                        tmxr_linemsgf (tmln, "\r\nHSLA Port (%s)? ", getDevList());
                         
                         // reset input buffer
                         tty->nPos = 0;
