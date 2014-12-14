@@ -300,7 +300,7 @@ t_stat mux_attach(UNIT *unitp, char *cptr)
     }
     sim_activate( unitp, mux_tmxr_poll ) ;
     
-    memset(ttys, 0, sizeof(ttys));  // resetttys structure
+    //memset(ttys, 0, sizeof(ttys));  // resetttys structure
            
     return ( SCPE_OK ) ;
 }
@@ -651,6 +651,17 @@ t_stat  mux_reset(DEVICE *dptr)
     else
     {
         sim_cancel( unitp ) ;
+    }
+    
+    for(int line = 0 ; line < MUX_MAX ; line += 1)
+    {
+        MUXTERMIO *tty = &ttys[line];   // fetch tty connection info
+        tty->mux_line = -1;
+        tty->state = eDisconnected;
+        tty->tmln = NULL;
+        if (tty->fmti)
+            tty->fmti->inUse = false;   // multics device no longer in use
+        tty->fmti = NULL;
     }
     return ( SCPE_OK ) ;
     

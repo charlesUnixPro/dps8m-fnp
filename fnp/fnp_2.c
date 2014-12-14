@@ -280,9 +280,14 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
         snprintf(n, sizeof(n), "%d", line);
         
         tmxr_dscln(&mux_unit, !0, n, mp);       // disconnect line
-        memset(tty, 0, sizeof(MUXTERMIO));      // clear tty struct
+        tty->mux_line = -1;
+        tty->state = eDisconnected;
+        tty->tmln = NULL;
+        if (tty->fmti)
+            tty->fmti->inUse = false;
+        tty->fmti = NULL;
         
-        return eDisconnected;                   // request line disconnect
+        return eDisconnected;                   // line disconnect
     }
     
     // buffer too full for anything more?

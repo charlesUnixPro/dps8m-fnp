@@ -105,7 +105,7 @@ t_stat parse_sym (char *cptr, t_addr addr, UNIT *uptr, t_value *val, int32 sw)
 }
 
 extern MUXTERMIO ttys[MUX_MAX];
-
+void MUXDisconnectAll();
 
 t_stat sim_instr (void)
 {
@@ -140,8 +140,17 @@ t_stat sim_instr (void)
         AIO_CHECK_EVENT;
         
         int32 temp = sim_poll_kbd ();
-        if ((temp & 0xff) == 'q')
-            reason = SCPE_BREAK;
+        
+        switch(temp & 0x7f)
+        {
+            case 'q':                   // quit instr loop
+                reason = SCPE_BREAK;
+                break;
+            case 'd':                   // disconnect all connected lines
+                sim_printf("\r\n");
+                MUXDisconnectAll();
+                break;
+        }
         
         if (sim_interval <= 0)
         {

@@ -8,6 +8,8 @@
 
 #include "fnp_defs.h"
 
+#include "fnp_mux.h"
+
 #include "fnp_1.h"
 #include "fnp_2.h"
 #include "fnp_utils.h"
@@ -30,6 +32,19 @@ t_stat OnMuxConnect(TMLN *tmnl, int line)
     ttys[line].state = eInput;      // waiting for user input
     
     return SCPE_OK;
+}
+
+void MUXDisconnectAll()
+{
+    for (int line = 0 ; line < mux_max ; line += 1)
+    {
+        MUXTERMIO *tty = &ttys[line];   // fetch tty connection info
+        if (tty->mux_line != -1)
+        {
+            tmxr_reset_ln( &mux_ldsc[line] ) ;
+            OnMuxDisconnect(line, 0);
+        }
+    }
 }
 
 
