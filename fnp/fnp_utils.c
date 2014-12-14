@@ -9,6 +9,10 @@
 // Utility routines that have served me well for far too many years ...
 //
 
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "fnp_utils.h"
 
 char *strrev(char *str) /// in-place strrev()
@@ -513,4 +517,30 @@ char *Strsep(char **stringp, const char *delim)
     
     *stringp = e;
     return s;
+}
+
+/*
+ * return a static char* representing the current time as specified by TIMEFORMAT
+ */
+
+#define TIMEFORMAT "%Y/%m/%d %T"
+
+char *Now()
+{
+    static char outstr[200];
+    time_t t;
+    struct tm *tmp;
+    
+    t = time(NULL);
+    tmp = localtime(&t);
+    if (tmp == NULL) {
+        perror("localtime");
+        exit(EXIT_FAILURE);
+    }
+    
+    if (strftime(outstr, sizeof(outstr), TIMEFORMAT, tmp) == 0) {
+        fprintf(stderr, "strftime returned 0");
+        exit(EXIT_FAILURE);
+    }
+    return outstr;
 }

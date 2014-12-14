@@ -81,7 +81,7 @@ void dumpFMTI(FMTI *p)
     
 }
 
-char *ToString(FMTI *p, int line)
+char *strFMTI(FMTI *p, int line)
 {
     if (!p)
         return "";

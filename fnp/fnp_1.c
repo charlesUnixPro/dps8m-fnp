@@ -10,6 +10,7 @@
 
 #include "fnp_1.h"
 #include "fnp_2.h"
+#include "fnp_utils.h"
 
 extern MUXTERMIO ttys[MUX_MAX];
 
@@ -21,7 +22,7 @@ getDevList();
  */
 t_stat OnMuxConnect(TMLN *tmnl, int line)
 {
-    sim_printf("CONNECT %d\n", line);
+    sim_printf("%s CONNECT %d\n", Now(), line);
     
     tmxr_linemsgf (tmnl, "HSLA Port (%s)? ", getDevList());
     
@@ -37,7 +38,7 @@ t_stat OnMuxConnect(TMLN *tmnl, int line)
  */
 t_stat OnMuxDisconnect(int line, int kar)
 {
-    sim_printf("DISCONNECT %d\n", line);
+    sim_printf("%s DISCONNECT %d\n", Now(), line);
 
     MUXTERMIO *tty = &ttys[line];   // fetch tty connection info
     tty->mux_line = -1;             // line no longer connected
@@ -52,13 +53,13 @@ t_stat OnMuxDisconnect(int line, int kar)
 t_stat OnMuxStalled(int line, int kar)
 {
     
-    sim_printf("STALLED %d (%c)\n", line, kar);
+    sim_printf("%s STALLED %d (%c)\n", Now(), line, kar);
     
     return SCPE_OK;
 }
 
 FMTI *searchForDevice(char *dev);
-char *ToString(FMTI *p, int line);
+char *strFMTI(FMTI *p, int line);
 
 /*
  * called when a character is received on a MUX line ...
@@ -87,7 +88,9 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
                         q->inUse = true;            // device is being used
                         tty->state = ePassThrough;  // device attached to tty line. Go into passthrough mode
                         
-                        tmxr_linemsgf (tmln, "%s", ToString(q, line));
+                        tmxr_linemsgf (tmln, "%s", strFMTI(q, line));
+                        
+                        sim_printf("%s LINE %d CONNECTED AS %s\n", Now(), line, q->multics.name);
                     }
                     else
                     {
@@ -122,7 +125,7 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
  */
 t_stat OnMuxRxBreak(int line, int kar)
 {
-    sim_printf("Rx (BREAK): line:%d\n", line, kar);
+    sim_printf("%s Rx (BREAK): line:%d\n", Now(), line, kar);
     
     return SCPE_OK;
 }
@@ -132,7 +135,7 @@ t_stat OnMuxRxBreak(int line, int kar)
  */
 t_stat OnTTI(int indata)
 {
-    sim_printf("TTI: '%c'\n", indata);
+    sim_printf("%s TTI: '%c'\n", Now(), indata);
     return SCPE_OK;
 }
 

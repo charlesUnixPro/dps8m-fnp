@@ -42,4 +42,6 @@ char *strlower(char *q);
 
 char *Strsep(char **stringp, const char *delim);
 
+char *Now();
+
 #endif /* defined(__fnp__fnp_utils__) */

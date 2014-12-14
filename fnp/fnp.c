@@ -67,7 +67,7 @@ t_stat sim_load (FILE *fileref, char *cptr, char *fnam, int flag)
  
     if (sim_switches & SWMASK ('V'))  /* verbose? */
     {
-        sim_printf("Faux Multices devices loaded ...\n");
+        sim_printf("Faux Multics devices loaded ...\n");
         while (p)
         {
             dumpFMTI(p);
