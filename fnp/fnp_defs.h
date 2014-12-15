@@ -204,16 +204,16 @@ extern int32 ipc_enable, ipc_verbose, ipc_trace;
 
 enum enum_ipc_funcs
 {
-    ipcUnknown = 0,
-    ipcEnable,
-    ipcDisable,
-    ipcEnter,
-    ipcExit,
-    ipcShout,
-    ipcShoutRx,
-    ipcShoutTx,
-    ipcWhisper,
-    ipcTest,
+    ipcUnknown = 0, // unknown IPC state
+    ipcEnable,      // local IPC enable
+    ipcDisable,     // local IPC disable
+    ipcEnter,       // another peer has ENTERed the IPC group
+    ipcExit,        // a peer has EXITed the IPC group
+    ipcShoutRx,     // we've received a SHOUT (broadcast) message
+    ipcShoutTx,     // we're SHOUTing (broadcasting) a IPC message to all connected peers
+    ipcWhisperRx,   // we've received a WHISPER (peer-to-peer) messsage
+    ipcWhisperTx,   // we're WHISPERing a IPC message to a peer
+    ipcTest,        // perform IPC test mode
 };
 typedef enum enum_ipc_funcs ipc_funcs;
 

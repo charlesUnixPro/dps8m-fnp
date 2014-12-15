@@ -330,7 +330,11 @@ ipc_actor (zsock_t *pipe, void *args)
                     char *string = zmsg_popstr (msg);
                     zyre_shouts (node, IPC_GROUP, "%s", string);
                 }
-                else
+                else if (streq (command, "WHISPER"))
+                {
+                    char *string = zmsg_popstr (msg);
+                    zyre_whispers (node, IPC_GROUP, "%s", string);
+                } else
                 {
                     sim_debug (DBG_VERBOSE, &ipc_dev,"ipc_actor(): E: invalid message to actor");
                     //assert (false);
@@ -349,16 +353,21 @@ ipc_actor (zsock_t *pipe, void *args)
             
             if (streq (event, "ENTER"))
             {
-                ipc(ipcEnter, name, 0, 0);
+                ipc(ipcEnter, name, peer, message);
             }
             else if (streq (event, "EXIT"))
             {
-                ipc(ipcExit, name, 0, 0);
+                ipc(ipcExit, name, peer, 0);
             }
             if (streq (event, "SHOUT"))
             {
-                ipc(ipcShoutRx, name, message, 0);
+                ipc(ipcShoutRx, name, peer, message);
             }
+            if (streq (event, "WHISPER"))
+            {
+                ipc(ipcWhisperRx, name, peer, group);
+            }
+
             if (ipc_verbose)
             {
                 sim_printf("Message from node\n");
@@ -409,19 +418,30 @@ int32 ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3)
             break;
          
         case ipcEnter:
-            sim_debug (DBG_VERBOSE, &ipc_dev, "%s has entered " STR(IPC_GROUP) "\n", arg1);
+            //sim_debug (DBG_VERBOSE, &ipc_dev, "%s/%s has entered " STR(IPC_GROUP) "\n", arg1, arg2);
+            sim_printf("(ENTER)      %s/%s has entered " IPC_GROUP " from %s\n", arg1, arg2, arg3);
             break;
             
         case ipcExit:
-            sim_debug (DBG_VERBOSE, &ipc_dev, "%s has left " STR(IPC_GROUP) "\n", arg1);
+            //sim_debug (DBG_VERBOSE, &ipc_dev, "%s has left " STR(IPC_GROUP) "\n", arg1);
+            sim_printf("(EXIT)       %s/%s has left " IPC_GROUP "\n", arg1, arg2);
             break;
             
         case ipcShoutTx:
             zstr_sendx (actor, "SHOUT", arg1, NULL);
             break;
             
+        case ipcWhisperTx:
+            zstr_sendx (actor, "WHISPER", arg1, NULL);
+            break;
+    
         case ipcShoutRx:
-            sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
+            //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
+            sim_printf("(RX SHOUT)   %s/%s:<%s>\n", arg1, arg2, arg3);
+            break;
+        case ipcWhisperRx:
+            //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
+            sim_printf("(RX WHISPER) %s/%s:<%s>\n", arg1, arg2, arg3);
             break;
 
         case ipcTest:

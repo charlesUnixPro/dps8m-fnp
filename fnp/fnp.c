@@ -150,6 +150,9 @@ t_stat sim_instr (void)
                 sim_printf("\r\n");
                 MUXDisconnectAll();
                 break;
+            case 't':
+                ipc(ipcTest, 0, 0, 0);  // test IPC/zyre stuff
+                break;
         }
         
         if (sim_interval <= 0)
