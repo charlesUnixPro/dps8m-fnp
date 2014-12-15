@@ -848,12 +848,18 @@ FNP = ${FNPD}/fnp.c ${FNPD}/fnp_2.c ${FNPD}/fnp_utils.c ${FNPD}/fnp_mux.c ${FNPD
 FNP_OPT = -DVM_FNP -DUSE_INT64 -I ${FNPD} 
 
 
+#
+# Emulator source files and compile time options
+#
+
+WATCHLDFLAGS = -lzmq -lczmq -lzyre
+WATCH = ${FNPD}/watcher.c
 
 
 #
 # Build everything (not the unsupported/incomplete simulators)
 #
-ALL = fnp
+ALL = fnp watcher
 
 all : ${ALL}
 
@@ -892,4 +898,10 @@ fnp : ${BIN}fnp${EXE}
 ${BIN}fnp${EXE} : ${FNP} ${SIM}
 	${MKDIRBIN}
 	${CC} ${FNP} ${SIM} ${FNP_OPT} $(CC_OUTSPEC) ${LDFLAGS} ${FNPLDFLAGS}
+
+watcher : ${BIN}watcher${EXE}
+${BIN}watcher${EXE} : ${WATCH}
+	${MKDIRBIN}
+	${CC} ${WATCH} $(CC_OUTSPEC) ${LDFLAGS} ${WATCHLDFLAGS}
+
 
