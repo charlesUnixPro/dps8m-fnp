@@ -7,6 +7,7 @@
 //
 
 #include "fnp_defs.h"
+#include "sim_tmxr.h"
 
 #include "fnp_mux.h"
 
@@ -15,6 +16,7 @@
 #include "fnp_utils.h"
 
 extern MUXTERMIO ttys[MUX_MAX];
+extern TMLN mux_ldsc[MUX_MAX];
 
 char *
 getDevList();
@@ -34,17 +36,25 @@ t_stat OnMuxConnect(TMLN *tmnl, int line)
     return SCPE_OK;
 }
 
-void MUXDisconnectAll()
+void MUXDisconnectLine(int line)
 {
-    for (int line = 0 ; line < mux_max ; line += 1)
+    if (line >= 0 && line < mux_max)
     {
-        MUXTERMIO *tty = &ttys[line];   // fetch tty connection info
-        if (tty->mux_line != -1)
+//    MUXTERMIO *tty = &ttys[line];   // fetch tty connection info
+//    if (tty->mux_line != -1)        // this is probably not the best way to test for line connection
+        TMXR *tmxr = &mux_desc;
+        if (tmxr->ldsc[line].conn)    // much better I think
         {
             tmxr_reset_ln( &mux_ldsc[line] ) ;
             OnMuxDisconnect(line, 0);
         }
     }
+}
+
+void MUXDisconnectAll()
+{
+    for (int line = 0 ; line < mux_max ; line += 1)
+        MUXDisconnectLine(line);
 }
 
 
@@ -91,7 +101,6 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
     {
         case eDisconnected:
             break;
-            
         case eInput:
             switch (processUserInput(mp, tmln, tty, line, kar))
             {
@@ -110,12 +119,11 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
                     else
                     {
                         tmxr_linemsgf (tmln, "\r\nDevice <%s> not available. Please re-enter.", tty->buffer);
-                        tmxr_linemsgf (tmln, "\r\nHSLA Port (%s)? ", getDevList());
-                        
-                        // reset input buffer
-                        tty->nPos = 0;
-                        tty->buffer[0] = '\0';
+                        tmxr_linemsgf (tmln, "\r\n" PROMPT, getDevList());
                     }
+                    // reset input buffer
+                    tty->nPos = 0;
+                    tty->buffer[0] = '\0';
                     break;
                 case eDisconnected:
                     OnMuxDisconnect(line, 0);

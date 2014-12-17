@@ -9,6 +9,7 @@
 
 #include "sim_defs.h"
 #include "sim_tmxr.h"
+#include "fnp_mux.h"
 
 #include "fnp_defs.h"
 #include "fnp_2.h"
@@ -26,7 +27,6 @@
 
 char sim_name[] = "FNP (Multics Faux FNP)";
 
-//int32 saved_PC = 0;
 int32 sim_emax = 1;
 
 const char *sim_stop_messages[] = {
@@ -42,13 +42,13 @@ DEVICE *sim_devices[] =
     &ipc_dev,
     &mux_dev,
     &clk_dev,
-    //&tti_dev,
-    //&tto_dev,
+//    &tti_dev,
+//    &tto_dev,
     NULL
 };
 
 FMTI *readAndParse(char *file);
-FMTI *readDev(FILE *);
+FMTI *readDevInfo(FILE *);
 
 void dumpFMTI(FMTI *);
 
@@ -61,9 +61,7 @@ t_stat sim_load (FILE *fileref, char *cptr, char *fnam, int flag)
     if (flag == 1)
         return SCPE_OK;
     
-    //readAndParse(fnam);
-    
-    FMTI *p = readDev(fileref);
+    FMTI *p = readDevInfo(fileref);
  
     if (sim_switches & SWMASK ('V'))  /* verbose? */
     {
@@ -105,6 +103,7 @@ t_stat parse_sym (char *cptr, t_addr addr, UNIT *uptr, t_value *val, int32 sw)
 }
 
 extern MUXTERMIO ttys[MUX_MAX];
+extern TMLN mux_ldsc[MUX_MAX];
 void MUXDisconnectAll();
 
 t_stat sim_instr (void)
@@ -133,25 +132,37 @@ t_stat sim_instr (void)
     else
         ipc(ipcEnable, 0, 0, 0);                // start IPC beacon
     
-    //ipc(ipcTest, 0, 0, 0);
-    
+    TMXR *tmxr = &mux_desc;
+
     while (reason == 0)
     {                                            /* loop until ABORT */
         AIO_CHECK_EVENT;
         
         int32 temp = sim_poll_kbd ();
-        
         switch(temp & 0x7f)
         {
             case 'q':                   // quit instr loop
                 reason = SCPE_BREAK;
                 break;
             case 'd':                   // disconnect all connected lines
-                sim_printf("\r\n");
+                sim_printf("\r\nDisconnect all MUX lines\n");
                 MUXDisconnectAll();
                 break;
             case 't':
+                sim_printf("\r\nIPC (zyre) test\n");
                 ipc(ipcTest, 0, 0, 0);  // test IPC/zyre stuff
+                break;
+            case 's':
+                sim_printf("\r\nLine/Connection statistics\n");
+                for(int n = 0 ; n < mux_max ; n += 1)
+                {
+                    if (tmxr->ldsc[n].conn) // if line 'n' is connected
+                    {
+                        TMLN *tmln = &mux_ldsc[n];
+                        tmxr_fstats(stdout, tmln, n);
+                        tmxr_fconns(stdout, tmln, -1);
+                    }
+                }
                 break;
         }
         
@@ -167,7 +178,7 @@ t_stat sim_instr (void)
     }
     
     if (ipc_enable)
-        ipc(ipcDisable, 0, 0, 0);     // start IPC operation
+        ipc(ipcDisable, 0, 0, 0);     // stop IPC operation
 
     return SCPE_OK;
 }

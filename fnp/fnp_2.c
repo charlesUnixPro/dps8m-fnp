@@ -96,7 +96,7 @@ char *strFMTI(FMTI *p, int line)
     "attributes:      %s\r\n"
     "initial_command: %s\r\n"
     "comment:         %s\r\n"
-    "\n", line, p->multics.name,  p->multics.baud , p->multics.terminal_type , p->multics.attributes, p->multics.initial_command, p->multics.comment);
+    "\n", line, p->multics.name,  p->multics.baud, p->multics.terminal_type, p->multics.attributes, p->multics.initial_command, p->multics.comment);
     
     return str;
 }
@@ -254,11 +254,12 @@ getDevList()
     return buf;
 }
 
+
 FMTI *searchForDevice(char *dev)
 {
     //sim_printf("looking for <%s>\n", dev);
-    
     FMTI *t = fmti;
+        
     while (t)
     {
         if (t->inUse == false)
@@ -271,15 +272,18 @@ FMTI *searchForDevice(char *dev)
 }
 
 MUXTERMIO ttys[MUX_MAX];
+extern TMLN mux_ldsc[MUX_MAX];
 
 MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar)
 {
     if (kar == 0x1b || kar == 0x03)             // ESCape ('\e') | ^C
     {
-        char n[132];
-        snprintf(n, sizeof(n), "%d", line);
+//        char n[132];
+//        snprintf(n, sizeof(n), "%d", line);
+//        tmxr_dscln(&mux_unit, !0, n, mp);       // disconnect line
         
-        tmxr_dscln(&mux_unit, !0, n, mp);       // disconnect line
+        tmxr_reset_ln( &mux_ldsc[line] ) ;
+        
         tty->mux_line = -1;
         tty->state = eDisconnected;
         tty->tmln = NULL;
@@ -293,7 +297,7 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
     // buffer too full for anything more?
     if (tty->nPos >= sizeof(tty->buffer))
     {
-        // yes. Only allow \n, \r, ^H
+        // yes. Only allow \n, \r, ^H, ^R
         switch (kar)
         {
             case '\b':  // backspace
@@ -310,7 +314,7 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
 
             case 0x12:  // ^R
                 tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
-                tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
+                tmxr_linemsgf (tmln, PROMPT, getDevList());
                 tmxr_linemsg  (tmln, tty->buffer);
                 break;
                 
@@ -346,7 +350,7 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
                 
             case 0x12:  // ^R
                 tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
-                tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
+                tmxr_linemsgf (tmln, PROMPT, getDevList());
                 tty->buffer[tty->nPos] = 0;
                 tmxr_linemsg  (tmln, tty->buffer);
                 break;
@@ -361,7 +365,7 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
     return eInput;  // stay in input mode
 }
 
-FMTI * readDev(FILE *src)
+FMTI * readDevInfo(FILE *src)
 {
     char buff[1024];
 
@@ -408,16 +412,16 @@ FMTI * readDev(FILE *src)
         else if (strcmp(first, "initial_command") == 0)
             current->multics.initial_command  = strdup(trim(second));
         else
-            sim_printf("Unknown entry '%s'\n", first);
+            sim_printf("Unknown terminal attribute '%s'\n", first);
     }
     
     return head;
 }
 
-FMTI *readAndParse(char *file)
+FMTI *readAndPrint(char *file)
 {
     FILE *in = fopen(file, "r");
-    FMTI *p = readDev(in);
+    FMTI *p = readDevInfo(in);
     fclose(in);
     
     while (p)

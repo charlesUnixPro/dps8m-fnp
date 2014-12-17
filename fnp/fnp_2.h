@@ -57,4 +57,7 @@ typedef struct muxtermio MUXTERMIO;
 
 MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar);
 
+#define PROMPT  "HSLA Port (%s)? "
+
+
 #endif /* defined(__fnp__fnp_2__) */
