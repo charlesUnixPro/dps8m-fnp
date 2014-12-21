@@ -117,8 +117,11 @@ t_stat sim_instr (void)
     mux(SLS, 0, 0);
     
     
-    UNIT *u = &mux_unit;
-    if (u->filename == NULL || strlen(u->filename) == 0)
+    //UNIT *u = &mux_unit;
+    //if (u->filename == NULL || strlen(u->filename) == 0)
+    
+    int32 muxU = muxWhatUnitAttached(); // what (if any) mux device is attached?
+    if (muxU == -1)
         sim_printf("Warning: MUX not attached.\n");
     //else
     //    mux_desc.lines = nTTYdevs;
@@ -130,7 +133,7 @@ t_stat sim_instr (void)
     if (!ipc_enable)
         sim_printf("Warning: IPC not enabled.\n");
     else
-        ipc(ipcEnable, 0, 0, 0);                // start IPC beacon
+        ipc(ipcEnable, 0, 0, 0, muxU);                // start IPC beacon for muxU
     
     TMXR *tmxr = &mux_desc;
 
@@ -150,7 +153,7 @@ t_stat sim_instr (void)
                 break;
             case 't':
                 sim_printf("\r\nIPC (zyre) test\n");
-                ipc(ipcTest, 0, 0, 0);  // test IPC/zyre stuff
+                ipc(ipcTest, 0, 0, 0, 0);  // test IPC/zyre stuff
                 break;
             case 's':
                 sim_printf("\r\nLine/Connection statistics\n");
@@ -178,7 +181,7 @@ t_stat sim_instr (void)
     }
     
     if (ipc_enable)
-        ipc(ipcDisable, 0, 0, 0);     // stop IPC operation
+        ipc(ipcDisable, 0, 0, 0, muxU);     // stop IPC operation
 
     return SCPE_OK;
 }

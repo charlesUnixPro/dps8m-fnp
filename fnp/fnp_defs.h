@@ -164,7 +164,7 @@ typedef struct {
 } DIB;
 
 
-extern UNIT mux_unit;
+extern UNIT mux_unit[4];
 extern DEVICE clk_dev, mux_dev, tti_dev, tto_dev, ipc_dev;
 
 int mux_update_status( DIB * dibp, TMXR * tmxr_desc );
@@ -217,7 +217,7 @@ enum enum_ipc_funcs
 };
 typedef enum enum_ipc_funcs ipc_funcs;
 
-int32  ipc (ipc_funcs, char *arg1, char *arg2, char *arg3);
+t_stat  ipc (ipc_funcs, char *arg1, char *arg2, char *arg3, int32 arg4);
 
 
 #endif

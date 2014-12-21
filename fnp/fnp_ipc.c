@@ -8,6 +8,8 @@
 
 #include "fnp_defs.h"
 
+#include "fnp_mux.h"
+
 #include "fnp_ipc.h"
 
 int32 ipc_enable = 0;
@@ -291,11 +293,11 @@ ipc_actor (zsock_t *pipe, void *args)
     assert(node);
     if (!node)  //  Could not create new node
     {
-        sim_printf("Couldn't create IPC node...\n");
+        sim_printf("Couldn't create IPC node ... %s\n", name);
         return;
     }
     
-    sim_printf("Starting IPC ...");
+    sim_printf("Starting IPC node %s ...", name);
 
     if (ipc_verbose)
         zyre_set_verbose (node);  // uncomment to watch the events
@@ -353,19 +355,19 @@ ipc_actor (zsock_t *pipe, void *args)
             
             if (streq (event, "ENTER"))
             {
-                ipc(ipcEnter, name, peer, message);
+                ipc(ipcEnter, name, peer, message, 0);
             }
             else if (streq (event, "EXIT"))
             {
-                ipc(ipcExit, name, peer, 0);
+                ipc(ipcExit, name, peer, 0, 0);
             }
             if (streq (event, "SHOUT"))
             {
-                ipc(ipcShoutRx, name, peer, message);
+                ipc(ipcShoutRx, name, peer, message, 0);
             }
             if (streq (event, "WHISPER"))
             {
-                ipc(ipcWhisperRx, name, peer, group);
+                ipc(ipcWhisperRx, name, peer, group, 0);
             }
 
             if (ipc_verbose)
@@ -402,13 +404,20 @@ void killIPC()
     poller = 0;
 }
 
-int32 ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3)
+t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
 {
     switch (fn)
     {
         case ipcEnable:
-            actor = zactor_new (ipc_actor, IPC_FNP0);     // start FNP 0
-            assert (actor);
+            {
+                int32 muxU = muxWhatUnitAttached();
+                if (muxU == -1)
+                    return SCPE_NOTATT;
+            
+                //actor = zactor_new (ipc_actor, IPC_FNP0);         // start FNP 0
+                actor = zactor_new (ipc_actor, fnpNames[muxU]);
+                assert (actor);
+            }
             break;
             
         case ipcDisable:
@@ -451,7 +460,7 @@ int32 ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3)
         default:
             break;
     }
-    return 0;
+    return SCPE_OK;
 }
 
 

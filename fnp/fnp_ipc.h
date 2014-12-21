@@ -19,9 +19,10 @@
 
 #define IPC_GROUP    "MulticsIPC"       // name of zyre group
 
-#define IPC_FNP0     "fnp0"     // FNP A
-#define IPC_FNP2     "fnp1"     // FNP B
-#define IPC_FNP3     "fnp2"     // FNP C
-#define IPC_FNP4     "fnp3"     // FNP D
+
+//#define IPC_FNP0     fnpNames[0]    //"fnp0"     // FNP A
+//#define IPC_FNP1     fnpNames[1]    //"fnp1"     // FNP B
+//#define IPC_FNP2     fnpNames[2]    //"fnp2"     // FNP C
+//#define IPC_FNP3     fnpNames[3]    //"fnp3"     // FNP D
 
 #endif /* defined(__fnp__fnp_ipc__) */
