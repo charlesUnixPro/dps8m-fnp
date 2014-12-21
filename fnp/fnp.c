@@ -65,11 +65,12 @@ t_stat sim_load (FILE *fileref, char *cptr, char *fnam, int flag)
  
     if (sim_switches & SWMASK ('V'))  /* verbose? */
     {
+        FMTI *q = p;
         sim_printf("Faux Multics devices loaded ...\n");
-        while (p)
+        while (q)
         {
-            dumpFMTI(p);
-            p = p->next;
+            dumpFMTI(q);
+            q = q->next;
         }
     }
     
@@ -102,8 +103,8 @@ t_stat parse_sym (char *cptr, t_addr addr, UNIT *uptr, t_value *val, int32 sw)
     return SCPE_OK;
 }
 
-extern MUXTERMIO ttys[MUX_MAX];
-extern TMLN mux_ldsc[MUX_MAX];
+extern MUXTERMIO ttys[MAX_LINES];
+extern TMLN mux_ldsc[MAX_LINES];
 void MUXDisconnectAll();
 
 t_stat sim_instr (void)

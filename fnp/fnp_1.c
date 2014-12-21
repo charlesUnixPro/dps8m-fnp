@@ -15,8 +15,8 @@
 #include "fnp_2.h"
 #include "fnp_utils.h"
 
-extern MUXTERMIO ttys[MUX_MAX];
-extern TMLN mux_ldsc[MUX_MAX];
+extern MUXTERMIO ttys[MAX_LINES];
+extern TMLN mux_ldsc[MAX_LINES];
 
 char *
 getDevList();

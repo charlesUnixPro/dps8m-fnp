@@ -23,17 +23,17 @@
 int32   mux_chars_Rx = 0;
 
 int32   mux_brkio   = SCPE_OK ;                         /*  default I/O status code     */
-int32   mux_max     = MUX_MAX ;                         /*  max # QTY lines - user      */
+int32   mux_max     = MAX_LINES ;                         /*  max # QTY lines - user      */
                                                         /*  controllable                */
 int32   mux_mdm     = 0 ;                               /*  QTY modem control active?   */
 int32   mux_auto    = 0 ;                               /*  QTY auto disconnect active? */
 int32   mux_polls   = 0 ;                               /*  total 'qty_svc' polls       */
 
-TMLN    mux_ldsc[ MUX_MAX ] = { {0} } ;                 /*  QTY line descriptors        */
-TMXR    mux_desc    = { MUX_MAX, 0, 0, mux_ldsc } ;     /*  mux descriptor      */
-int32   mux_status[ MUX_MAX ] = { 0 } ;                 /*  QTY line status             */
+TMLN    mux_ldsc[ MAX_LINES ] = { {0} } ;                 /*  QTY line descriptors        */
+TMXR    mux_desc    = { MAX_LINES, 0, 0, mux_ldsc } ;     /*  mux descriptor      */
+int32   mux_status[ MAX_LINES ] = { 0 } ;                 /*  QTY line status             */
                                                         /*  (must be at least 32 bits)  */
-int32   mux_tx_chr[ MUX_MAX ] = { 0 } ;                 /*  QTY line output character   */
+int32   mux_tx_chr[ MAX_LINES ] = { 0 } ;                 /*  QTY line output character   */
 
 int     mux_section     = -1 ;               /*  current line "section" (0 = RCV, 1 = XMT)  */
 int     mux_line        = -1 ;               /*  current line [0-63]                        */
@@ -273,7 +273,7 @@ MTAB mux_mod[] =
     { 0 }
 } ;
 
-extern MUXTERMIO ttys[MUX_MAX];
+extern MUXTERMIO ttys[MAX_LINES];
 
 REG *sim_PC = &mux_reg[0];
 
@@ -283,7 +283,7 @@ t_stat mux_attach(UNIT *unitp, char *cptr)
     if (muxU != -1)
         return SCPE_ALATT;  // a mux unit is already attached. Only can have 1 MUX unix per instance of simh
     
-    muxU = (int32) (unitp - mux_dev.units);                    /* get drive # */
+    muxU = (int32) (unitp - mux_dev.units);                    /* get mux # */
     sim_printf("Multiplexor attached as %s\n", fnpNames[muxU]);
     
     //uptr = mux_dev.units + drv;
@@ -312,7 +312,7 @@ t_stat mux_attach(UNIT *unitp, char *cptr)
         }
     }
     mux_polls = 0 ;
-    for ( a = 0 ; a < MUX_MAX ; ++a )
+    for ( a = 0 ; a < MAX_LINES ; ++a )
     {
         /*  QTY lines are always enabled - force RX and TX to 'enabled' */
         mux_status[ a ] = (MUX_L_RXE | MUX_L_TXE) ;
@@ -334,7 +334,6 @@ t_stat mux_detach( UNIT * unitp )
     
     sim_printf("Multiplexor %s detached\n", fnpNames[muxU2]);
 
-    
     sim_cancel( unitp ) ;
     return ( tmxr_detach(&mux_desc,unitp) ) ;
 }
@@ -365,12 +364,12 @@ t_stat mux_setnl( UNIT * uptr, int32 val, char * cptr, void * desc )
     {
         return ( SCPE_ARG ) ;
     }
-    newln = (int32) get_uint( cptr, 10, MUX_MAX, &r ) ;
+    newln = (int32) get_uint( cptr, 10, MAX_LINES, &r ) ;
     if ( (r != SCPE_OK) || (newln == mux_desc.lines) )
     {
         return ( r ) ;
     }
-    if ( (newln == 0) || (newln > MUX_MAX) )
+    if ( (newln == 0) || (newln > MAX_LINES) )
     {
         return ( SCPE_ARG ) ;
     }
@@ -395,9 +394,6 @@ t_stat mux_setnl( UNIT * uptr, int32 val, char * cptr, void * desc )
         }
     }
     mux_max = mux_desc.lines = newln ;
-    /*  Huh, I don't understand this yet...
-     qty_max = ((qty_dev.flags & DEV_DIS)? 0 : (qty_desc.lines / QTY_MAX)) ;
-     */
     return ( SCPE_OK ) ;
 }
 
@@ -484,8 +480,8 @@ int mux_update_xmti( TMXR * mp )
 int mux_update_rcvi( TMXR * mp )
 {
     int     line ;
-    TMLN *      lp ;
-    int32       datum ;
+    TMLN *  lp ;
+    int32   datum ;
     int     changes ;
     
     /*------------------------------------------------------*/
@@ -649,7 +645,7 @@ DEVICE mux_dev = {
     NULL,       // boot
     &mux_attach,// attach
     &mux_detach,// detach
-    &mux_dib,   // context (remove when ready)
+    &mux_dib,   // context 
     (DEV_DISABLE | DEV_MUX),
     0,          // dctrl
     NULL,       // devflags
@@ -683,7 +679,7 @@ t_stat  mux_reset(DEVICE *dptr)
         sim_cancel( unitp ) ;
     }
     
-    for(int line = 0 ; line < MUX_MAX ; line += 1)
+    for(int line = 0 ; line < MAX_LINES ; line += 1)
     {
         MUXTERMIO *tty = &ttys[line];   // fetch tty connection info
         tty->mux_line = -1;

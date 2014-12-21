@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "uthash.h"
+
 #include "fnp_defs.h"
 
 enum muxtermstate
@@ -24,18 +26,27 @@ enum muxtermstate
 
 typedef enum muxtermstate MUXTERMSTATE;
 
+struct  deviceAttributes {
+    char    *Attribute;
+    char    *Value;
+    UT_hash_handle hh;         /* makes this structure hashable */
+};
+typedef struct deviceAttributes ATTRIBUTES;
+
 struct fauxMulticsTerminalInfo
 {
     char *raw;
     struct
     {
         char    *name;     // Multics device name
-        char    *baud;     // baud rate
-        char    *comment;  // comment
-        char    *terminal_type;
-        char    *attributes;
-        char    *initial_command;
+//        char    *baud;     // baud rate
+//        char    *comment;  // comment
+//        char    *terminal_type;
+//        char    *attributes;
+//        char    *initial_command;
+        ATTRIBUTES    *attrs;
     } multics;
+
     char    *uti;         // UNIX terminfo terminal type
     bool    inUse;        // True if device is being used
     

@@ -72,13 +72,22 @@ void dumpFMTI(FMTI *p)
         return;
     
     sim_printf("name:            %s\n", p->multics.name);
-    sim_printf("baud:            %s\n", p->multics.baud);
-    sim_printf("terminal_type:   %s\n", p->multics.terminal_type);
-    sim_printf("attributes:      %s\n", p->multics.attributes);
-    sim_printf("initial_command: %s\n", p->multics.initial_command);
-    sim_printf("comment:         %s\n", p->multics.comment);
-    sim_printf("\n");
+//    sim_printf("baud:            %s\n", p->multics.baud);
+//    sim_printf("terminal_type:   %s\n", p->multics.terminal_type);
+//    sim_printf("attributes:      %s\n", p->multics.attributes);
+//    sim_printf("initial_command: %s\n", p->multics.initial_command);
+//    sim_printf("comment:         %s\n", p->multics.comment);
     
+    ATTRIBUTES *current, *tmp;
+    
+    HASH_ITER(hh, p->multics.attrs, current, tmp)
+    {
+        char temp[128];
+        snprintf(temp, sizeof(temp), "%s:", current->Attribute);
+        sim_printf("%-17s%s\n", trim(temp), current->Value);
+    }
+    
+    sim_printf("\n");
 }
 
 char *strFMTI(FMTI *p, int line)
@@ -90,13 +99,29 @@ char *strFMTI(FMTI *p, int line)
     
     snprintf(str, len,
     "\r\nLine %d connected as\r\n"
-    "name:            %s\r\n"
-    "baud:            %s\r\n"
-    "terminal_type:   %s\r\n"
-    "attributes:      %s\r\n"
-    "initial_command: %s\r\n"
-    "comment:         %s\r\n"
-    "\n", line, p->multics.name,  p->multics.baud, p->multics.terminal_type, p->multics.attributes, p->multics.initial_command, p->multics.comment);
+    "name:            %s\r\n",
+//    "baud:            %s\r\n"
+//    "terminal_type:   %s\r\n"
+//    "attributes:      %s\r\n"
+//    "initial_command: %s\r\n"
+//    "comment:         %s\r\n"
+//    "\n", line,
+       line,      p->multics.name    //,  p->multics.baud, p->multics.terminal_type, p->multics.attributes, p->multics.initial_command, p->multics.comment
+    );
+    
+    ATTRIBUTES *current, *tmp;
+    HASH_ITER(hh, p->multics.attrs, current, tmp)
+    {
+        char temp[128], temp2[128];
+        snprintf(temp,  sizeof(temp),  "%s:", current->Attribute);
+        snprintf(temp2, sizeof(temp2), "%-17s%s\n", trim(temp), current->Value);
+        
+        strcat(str, temp2);
+    }
+    
+    // XXX be careful of buffer overruns!
+    strcat(str, "\n");
+
     
     return str;
 }
@@ -115,12 +140,21 @@ void freeFMTI(FMTI *p, bool bRecurse)
         {
             FREE(p->multics.name);
         
-            FREE(p->multics.baud);
-            FREE(p->multics.terminal_type);
-            FREE(p->multics.attributes);
-            FREE(p->multics.initial_command);
-            FREE(p->multics.comment);
-        
+//            FREE(p->multics.baud);
+//            FREE(p->multics.terminal_type);
+//            FREE(p->multics.attributes);
+//            FREE(p->multics.initial_command);
+//            FREE(p->multics.comment);
+            
+            ATTRIBUTES *current, *tmp;
+            HASH_ITER(hh, p->multics.attrs, current, tmp)
+            {
+                HASH_DEL(p->multics.attrs, current);  /* delete; users advances to next */
+                free(current->Attribute);
+                free(current->Value);
+                free(current);            /* optional- if you want to free  */
+            }
+            
             FREE(p->uti);
             FMTI *nxt = p->next;
             
@@ -133,12 +167,21 @@ void freeFMTI(FMTI *p, bool bRecurse)
     
         FREE(p->multics.name);
     
-        FREE(p->multics.baud);
-        FREE(p->multics.terminal_type);
-        FREE(p->multics.attributes);
-        FREE(p->multics.initial_command);
-        FREE(p->multics.comment);
-    
+//        FREE(p->multics.baud);
+//        FREE(p->multics.terminal_type);
+//        FREE(p->multics.attributes);
+//        FREE(p->multics.initial_command);
+//        FREE(p->multics.comment);
+   
+        ATTRIBUTES *current, *tmp;
+        HASH_ITER(hh, p->multics.attrs, current, tmp)
+        {
+            HASH_DEL(p->multics.attrs, current);  /* delete; users advances to next */
+            free(current->Attribute);
+            free(current->Value);
+            free(current);            /* optional- if you want to free  */
+        }
+
         FREE(p->uti);
         
         FREE(p);
@@ -255,7 +298,7 @@ getDevList()
 }
 
 
-FMTI *searchForDevice(char *dev)
+FMTI *searchForDevice(char *name)
 {
     //sim_printf("looking for <%s>\n", dev);
     FMTI *t = fmti;
@@ -263,7 +306,7 @@ FMTI *searchForDevice(char *dev)
     while (t)
     {
         if (t->inUse == false)
-            if (strcmp(dev, t->multics.name) == 0)
+            if (strcmp(name, t->multics.name) == 0)
                 return t;
         t = t->next;
     }
@@ -271,8 +314,16 @@ FMTI *searchForDevice(char *dev)
     return NULL;
 }
 
-MUXTERMIO ttys[MUX_MAX];
-extern TMLN mux_ldsc[MUX_MAX];
+ATTRIBUTES *searchForAttribute(char *attrib, ATTRIBUTES *a)
+{
+    ATTRIBUTES *s;
+    
+    HASH_FIND_STR(a, attrib, s);
+    return s;
+}
+
+MUXTERMIO ttys[MAX_LINES];
+extern TMLN mux_ldsc[MAX_LINES];
 
 MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar)
 {
@@ -372,8 +423,12 @@ FMTI * readDevInfo(FILE *src)
     FMTI *head = NULL;      // head of linked list
     FMTI *current = NULL;   // currrent entry (tail)
 
+    int nLines = 0;
+    
     while (fgets(buff, sizeof(buff), src))
     {
+        nLines += 1;
+        
         char *p = trim(buff);   // trim leading and trailing whitespace
         
         if (p[0] == '#')        // a '#' as first non-white charater is a comment line
@@ -401,18 +456,31 @@ FMTI * readDevInfo(FILE *src)
         
         if (strcmp(first, "name") == 0)
             current->multics.name = strdup(trim(second));
-        else if (strcmp(first, "baud") == 0)
-            current->multics.baud  = strdup(trim(second));
-        else if (strcmp(first, "comment") == 0)
-            current->multics.comment  = strdup(trim(second));
-        else if (strcmp(first, "terminal_type") == 0)
-            current->multics.terminal_type  = strdup(trim(second));
-        else if (strcmp(first, "attributes") == 0)
-            current->multics.attributes  = strdup(trim(second));
-        else if (strcmp(first, "initial_command") == 0)
-            current->multics.initial_command  = strdup(trim(second));
+//        else if (strcmp(first, "baud") == 0)
+//            current->multics.baud  = strdup(trim(second));
+//        else if (strcmp(first, "comment") == 0)
+//            current->multics.comment  = strdup(trim(second));
+//        else if (strcmp(first, "terminal_type") == 0)
+//            current->multics.terminal_type  = strdup(trim(second));
+//        else if (strcmp(first, "attributes") == 0)
+//            current->multics.attributes  = strdup(trim(second));
+//        else if (strcmp(first, "initial_command") == 0)
+//            current->multics.initial_command  = strdup(trim(second));
+//        else
+//            sim_printf("Unknown terminal attribute '%s'\n", first);
         else
-            sim_printf("Unknown terminal attribute '%s'\n", first);
+        {
+            if (searchForAttribute(first, current->multics.attrs))
+                sim_printf("Warning: Ignoring duplicate attribute <%s> at line %d\n", first, nLines);
+            else
+            {
+                ATTRIBUTES *a  = (ATTRIBUTES*)calloc(1, sizeof(ATTRIBUTES));
+                a->Attribute = strdup(first);
+                a->Value = strdup(second);
+                HASH_ADD_KEYPTR(hh, current->multics.attrs, a->Attribute, strlen(a->Attribute), a);
+            }
+        }
+        
     }
     
     return head;

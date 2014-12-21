@@ -17,7 +17,7 @@
 
 #define STR(s) #s
 
-#define MUX_MAX     64                          /*  max number of FNP lines - hardware  */
+#define MAX_LINES     64                                /*  max number of FNP lines - hardware  */
 
 #define SCP_QUIT        SCPC_OK + 1
 
@@ -66,7 +66,7 @@
 #define MUX_LINE_EXTRACT( x )       (((x) & MUX_S_LMASK) >> 8)
 #define MUX_SECT_EXTRACT( x )       ((x) & 0x0001)
 
-#define MUX_LINE_TX_CHAR( line )    mux_tx_chr[ ((line) % MUX_MAX) ]
+#define MUX_LINE_TX_CHAR( line )    mux_tx_chr[ ((line) % MAX_LINES) ]
 #define MUX_LINE_RX_CHAR( line )    (mux_status[ (line) ] & MUX_S_DMASK)
 #define MUX_UNIT_ACTIVE( unitp )    ( (unitp)->conn )
 

@@ -17,7 +17,7 @@ t_stat mux_setnl( UNIT * uptr, int32 val, char * cptr, void * desc );
 int32 muxWhatUnitAttached();
 
 extern int32   mux_max;
-extern TMLN    mux_ldsc[ MUX_MAX ];
+extern TMLN    mux_ldsc[ MAX_LINES ];
 extern TMXR    mux_desc;
 
 // names of FNP units? may need to change
