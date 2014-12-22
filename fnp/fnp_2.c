@@ -66,6 +66,85 @@ baud:               1200;
 comment:            "cable 57073, TYMNET, prot 61.";
 #endif
 
+/*
+ * some regular expression stuff ...
+ * stolen from http://www.lemoda.net/c/unix-regex/
+ */
+
+// The following is the size of a buffer to contain any error messages encountered when the regular expression is compiled.
+#define MAX_ERROR_MSG 0x1000
+
+static int compile_regex (regex_t *r, const char *regex_text)
+{
+    int status = regcomp (r, regex_text, REG_EXTENDED|REG_NEWLINE);
+    if (status != 0)
+    {
+        char error_message[MAX_ERROR_MSG];
+        regerror (status, r, error_message, MAX_ERROR_MSG);
+        sim_printf ("Regex error compiling '%s': %s\n", regex_text, error_message);
+        return 1;
+    }
+    return 0;
+}
+
+/*
+ Match the string in "to_match" against the compiled regular
+ expression in "r".
+ */
+
+static bool match_regex (regex_t * r, const char * to_match)
+{
+//    /* "P" is a pointer into the string which points to the end of the
+//     previous match. */
+//    const char * p = to_match;
+//    /* "N_matches" is the maximum number of matches allowed. */
+//    const int n_matches = 10;
+//    /* "M" contains the matches found. */
+//    regmatch_t m[n_matches];
+//    
+//    while (1) {
+//        int i = 0;
+//        int nomatch = regexec (r, p, n_matches, m, 0);
+//        if (nomatch)
+//        {
+//            sim_printf ("No more matches.\n");
+//            return nomatch;
+//        }
+//        for (i = 0; i < n_matches; i++) {
+//            regoff_t start;
+//            regoff_t finish;
+//            if (m[i].rm_so == -1) {
+//                break;
+//            }
+//            start = m[i].rm_so + (p - to_match);
+//            finish = m[i].rm_eo + (p - to_match);
+//            if (i == 0) {
+//                sim_printf ("$& is ");
+//            }
+//            else {
+//                sim_printf ("$%d is ", i);
+//            }
+//            sim_printf ("'%.*s' (bytes %d:%d)\n", (finish - start), to_match + start, start, finish);
+//        }
+//        p += m[0].rm_eo;
+//    }
+//    return 0;
+    /* Execute regular expression */
+    int reti = regexec(r, to_match, 0, NULL, 0);
+    if (!reti)
+        return  true;
+    else if (reti == REG_NOMATCH)
+        return false;
+    else
+    {
+        char msgbuf[MAX_ERROR_MSG];
+        regerror(reti, r, msgbuf, sizeof(msgbuf));
+        sim_printf("match_regex(): match failed: %s\n", msgbuf);
+        return false;
+    }
+
+}
+
 void dumpFMTI(FMTI *p)
 {
     if (!p)
@@ -78,7 +157,7 @@ void dumpFMTI(FMTI *p)
 //    sim_printf("initial_command: %s\n", p->multics.initial_command);
 //    sim_printf("comment:         %s\n", p->multics.comment);
     
-    ATTRIBUTES *current, *tmp;
+    ATTRIBUTE *current, *tmp;
     
     HASH_ITER(hh, p->multics.attrs, current, tmp)
     {
@@ -109,7 +188,7 @@ char *strFMTI(FMTI *p, int line)
        line,      p->multics.name    //,  p->multics.baud, p->multics.terminal_type, p->multics.attributes, p->multics.initial_command, p->multics.comment
     );
     
-    ATTRIBUTES *current, *tmp;
+    ATTRIBUTE *current, *tmp;
     HASH_ITER(hh, p->multics.attrs, current, tmp)
     {
         char temp[128], temp2[128];
@@ -127,7 +206,7 @@ char *strFMTI(FMTI *p, int line)
 }
 
 #define FREE(t)     \
-    if (t) free(t)
+    if (t) { free(t); t = 0; }
 
 void freeFMTI(FMTI *p, bool bRecurse)
 {
@@ -146,16 +225,23 @@ void freeFMTI(FMTI *p, bool bRecurse)
 //            FREE(p->multics.initial_command);
 //            FREE(p->multics.comment);
             
-            ATTRIBUTES *current, *tmp;
+            ATTRIBUTE *current, *tmp;
             HASH_ITER(hh, p->multics.attrs, current, tmp)
             {
                 HASH_DEL(p->multics.attrs, current);  /* delete; users advances to next */
-                free(current->Attribute);
-                free(current->Value);
-                free(current);            /* optional- if you want to free  */
+                FREE(current->Attribute);
+                FREE(current->Value);
+                FREE(current);            /* optional- if you want to free  */
             }
             
             FREE(p->uti);
+            
+            if (p->multics.regex)
+            {
+                FREE(p->multics.regex);
+                regfree(&p->multics.r);
+            }
+            
             FMTI *nxt = p->next;
             
             FREE(p);
@@ -173,16 +259,22 @@ void freeFMTI(FMTI *p, bool bRecurse)
 //        FREE(p->multics.initial_command);
 //        FREE(p->multics.comment);
    
-        ATTRIBUTES *current, *tmp;
+        ATTRIBUTE *current, *tmp;
         HASH_ITER(hh, p->multics.attrs, current, tmp)
         {
             HASH_DEL(p->multics.attrs, current);  /* delete; users advances to next */
-            free(current->Attribute);
-            free(current->Value);
-            free(current);            /* optional- if you want to free  */
+            FREE(current->Attribute);
+            FREE(current->Value);
+            FREE(current);            /* optional- if you want to free  */
         }
 
         FREE(p->uti);
+        
+        if (p->multics.regex)
+        {
+            FREE(p->multics.regex);
+            regfree(&p->multics.r);
+        }
         
         FREE(p);
     }
@@ -193,89 +285,6 @@ FMTI *newFMTI()
 {
     return calloc(1, sizeof(FMTI));
 }
-
-#if COMMENT
-static void parse_ti(char *raw, FMTI *ti)
-{
-    memset(ti, 0, sizeof(FMTI));
-    
-    // 1st extract according to ';'
-    char *buf = strdup(raw);
-    ti->raw = buf;
-    
-    char **bp = &buf;
-    char *tok;
-    while ((tok = Strsep(bp, "\n")))
-    {
-        if (strlen(tok) == 0)
-            continue;
-        
-        //sim_printf("tok = `%s'\n", tok);
-        
-        // 2nd, now according to ';'
-        char *buf2 = strdup(tok);
-        char **bp2 = &buf2;
-        char *tok2;
-
-        while ((tok2 = Strsep(bp2, ";")))
-        {
-            if (strlen(tok2) == 0)
-                continue;
-            
-            //sim_printf("    tok2 = `%s'\n", trim(tok2));
-            
-            if (strchr(tok2, ':') == 0)
-            {
-                sim_printf("malformed entry '%s'\n", tok2);
-                continue;
-            }
-            
-            char *t = strdup(tok2);
-
-            char *first = Strtok(t, ":");
-            char *second = Strtok(NULL, ":");
-            
-            //sim_printf("%s %s\n", first, second);
-            
-            if (strcmp(first, "name") == 0)
-                ti->multics.name = strdup(trim(second));
-            else if (strcmp(first, "baud") == 0)
-                ti->multics.baud  = strdup(trim(second));
-            else if (strcmp(first, "comment") == 0)
-                ti->multics.comment  = strdup(trim(second));
-            else if (strcmp(first, "terminal_type") == 0)
-                ti->multics.terminal_type  = strdup(trim(second));
-            else if (strcmp(first, "attributes") == 0)
-                ti->multics.attributes  = strdup(trim(second));
-            else if (strcmp(first, "initial_command") == 0)
-                ti->multics.initial_command  = strdup(trim(second));
-            else
-                sim_printf("Unknown entry '%s'\n", first);
-            
-            free(t);
-        }
-        
-        free(buf2);
-    }
-}
-
-int32 parseTI()
-{
-    FMTI *t = fmti;
-    int n = 0;
-    
-    while (t->raw)
-    {
-        parse_ti(t->raw, t);
-        
-        //dumpFMTI(t);
-        t++;
-        n++;
-    }
-    
-    return n;
-}
-#endif
 
 char *
 getDevList()
@@ -306,17 +315,26 @@ FMTI *searchForDevice(char *name)
     while (t)
     {
         if (t->inUse == false)
-            if (strcmp(name, t->multics.name) == 0)
-                return t;
+        {
+            if (t->multics.regex)    // a regex is to be used to match the device names
+            {
+                bool iMatch = match_regex(& t->multics.r, name);
+                if (iMatch)
+                    return t;
+            }
+            else
+                if (strcmp(name, t->multics.name) == 0)
+                    return t;
+        }
         t = t->next;
     }
 
     return NULL;
 }
 
-ATTRIBUTES *searchForAttribute(char *attrib, ATTRIBUTES *a)
+ATTRIBUTE *searchForAttribute(char *attrib, ATTRIBUTE *a)
 {
-    ATTRIBUTES *s;
+    ATTRIBUTE *s;
     
     HASH_FIND_STR(a, attrib, s);
     return s;
@@ -456,8 +474,13 @@ FMTI * readDevInfo(FILE *src)
         
         if (strcmp(first, "name") == 0)
             current->multics.name = strdup(trim(second));
-//        else if (strcmp(first, "baud") == 0)
-//            current->multics.baud  = strdup(trim(second));
+        else if (strcmp(first, "regex") == 0)
+        {
+            char *regx = stripquotes(second);
+            int res = compile_regex(&current->multics.r, regx);
+            if (!res)
+                current->multics.regex = strdup(regx);
+        }
 //        else if (strcmp(first, "comment") == 0)
 //            current->multics.comment  = strdup(trim(second));
 //        else if (strcmp(first, "terminal_type") == 0)
@@ -474,13 +497,12 @@ FMTI * readDevInfo(FILE *src)
                 sim_printf("Warning: Ignoring duplicate attribute <%s> at line %d\n", first, nLines);
             else
             {
-                ATTRIBUTES *a  = (ATTRIBUTES*)calloc(1, sizeof(ATTRIBUTES));
+                ATTRIBUTE *a = (ATTRIBUTE*)calloc(1, sizeof(ATTRIBUTE));
                 a->Attribute = strdup(first);
                 a->Value = strdup(second);
                 HASH_ADD_KEYPTR(hh, current->multics.attrs, a->Attribute, strlen(a->Attribute), a);
             }
         }
-        
     }
     
     return head;

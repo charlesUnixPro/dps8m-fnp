@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include <regex.h>
+
 #include "uthash.h"
 
 #include "fnp_defs.h"
@@ -26,12 +28,12 @@ enum muxtermstate
 
 typedef enum muxtermstate MUXTERMSTATE;
 
-struct  deviceAttributes {
+struct  deviceAttribute {
     char    *Attribute;
     char    *Value;
     UT_hash_handle hh;         /* makes this structure hashable */
 };
-typedef struct deviceAttributes ATTRIBUTES;
+typedef struct deviceAttribute ATTRIBUTE;
 
 struct fauxMulticsTerminalInfo
 {
@@ -39,12 +41,15 @@ struct fauxMulticsTerminalInfo
     struct
     {
         char    *name;     // Multics device name
+        regex_t r;         // optional regex to match name
+        char    *regex;    // text of optional regex
+        
 //        char    *baud;     // baud rate
 //        char    *comment;  // comment
 //        char    *terminal_type;
 //        char    *attributes;
 //        char    *initial_command;
-        ATTRIBUTES    *attrs;
+        ATTRIBUTE   *attrs;
     } multics;
 
     char    *uti;         // UNIX terminfo terminal type

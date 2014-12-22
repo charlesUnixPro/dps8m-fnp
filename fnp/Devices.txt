@@ -26,6 +26,7 @@ attributes:         "hardwired, dont_read_answerback";
 initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
 
 name:               d.h012-d.h013;
+regex:              "d\.h01[23]";
 baud:               2400;
 comment:            "hardwired to service system channels c.h212,3.";
 terminal_type:      VIP7801;

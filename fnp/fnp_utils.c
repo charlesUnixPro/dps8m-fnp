@@ -33,6 +33,7 @@ char *strrev(char *str) /// in-place strrev()
 char *
 stripquotes(char *s)
 {
+/*
     char *p;
     
     while ((p = strchr(s, '"')))
@@ -40,6 +41,14 @@ stripquotes(char *s)
     strchop(s);
     
     return s;
+*/
+    int nLast = (int)strlen(s) - 1;
+    // trim away leading/trailing "'s
+    if (s[0] == '"')
+        s[0] = ' ';
+    if (s[nLast] == '"')
+        s[nLast] = ' ';
+    return trim(s);
 }
 
 /**
@@ -130,6 +139,9 @@ int strmask(char *str, char *mask)
  strmask("Hello", "?ello");	---> TRUE
  strmask("Hello", "H????");	---> TRUE
  strmask("H", "H????");		---> FALSE
+ 
+ see also: http://www.cs.princeton.edu/courses/archive/spr09/cos333/beautiful.html
+ for a better implementation
  */
 {
     char *sp, *mp, *reset_string, *reset_mask, *sn;
