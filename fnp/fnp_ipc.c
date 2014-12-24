@@ -12,7 +12,7 @@
 #include "fnp_mux.h"
 #endif
 #ifdef VM_DPS8
-
+#include "sim_defs.h"
 #endif
 
 #include "fnp_ipc.h"
@@ -33,7 +33,9 @@ t_stat ipc_reset (DEVICE *dptr);
  ipc_reg      IPC register list
  */
 
+#ifdef VM_FNP
 DIB ipc_dib = { MUX_INT_CLK, MUX_INT_CLK, PI_CLK, &clk };
+#endif
 
 UNIT ipc_unit = { UDATA (&ipc_svc, UNIT_DISABLE, 0) };
 
@@ -88,7 +90,11 @@ DEVICE ipc_dev = {
     NULL,
     NULL,   //&ipc_attach,// attach
     NULL,   //&ipc_detach,// detach
+#ifdef VM_FNP
     &ipc_dib,
+#else
+    NULL,
+#endif
     DEV_DIS | DEV_DISABLE | DEV_DEBUG,
     0,
     ipc_dbg
@@ -415,12 +421,16 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
     {
         case ipcEnable:
             {
+#ifdef VM_FNP
                 int32 muxU = muxWhatUnitAttached();
                 if (muxU == -1)
                     return SCPE_NOTATT;
             
-                //actor = zactor_new (ipc_actor, IPC_FNP0);         // start FNP 0
                 actor = zactor_new (ipc_actor, fnpNames[muxU]);
+#endif
+#ifdef VM_DPS8
+                actor = zactor_new (ipc_actor, "MulticsCS");
+#endif
                 assert (actor);
             }
             break;

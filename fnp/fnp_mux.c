@@ -42,7 +42,10 @@ int     mux_line_mask   = 0x003F ;           /*  maximum of 64 lines in this rev
 
 int32 mux_int_req, mux_busy, mux_done, mux_disable;
 
-char *fnpNames[4] = { _FNP0, _FNP1, _FNP2, _FNP3 };
+char *fnpNames[16] = { _FNP0,  _FNP1,  _FNP2,  _FNP3,
+                       _FNP4,  _FNP5,  _FNP6,  _FNP7,
+                       _FNP8,  _FNP9,  _FNP10, _FNP11,
+                       _FNP12, _FNP13, _FNP14, _FNP15};
 
 UNIT mux_unit[4] =
 {
