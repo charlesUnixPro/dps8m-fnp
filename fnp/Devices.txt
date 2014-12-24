@@ -25,13 +25,20 @@ terminal_type:      VIP7801;
 attributes:         "hardwired, dont_read_answerback";
 initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
 
-name:               d.h012-d.h013;
-regex:              "d\.h01[23]";
+name:               d.h012;
 baud:               2400;
-comment:            "hardwired to service system channels c.h212,3.";
+comment:            "hardwired to service system channels c.h212.";
 terminal_type:      VIP7801;
 attributes:         "hardwired, dont_read_answerback";
 initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
+
+name:               d.h013;
+baud:               2400;
+comment:            "hardwired to service system channels c.h213.";
+terminal_type:      VIP7801;
+attributes:         "hardwired, dont_read_answerback";
+initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
+
 
 name:               d.h014;
 baud:               9600;

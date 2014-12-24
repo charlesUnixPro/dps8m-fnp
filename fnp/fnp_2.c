@@ -5,9 +5,8 @@
 //  Created by Harry Reed on 12/9/14.
 //  Copyright (c) 2014 Harry Reed. All rights reserved.
 //
-
+#include "fnp_defs.h"
 #include "fnp_2.h"
-
 #include "fnp_utils.h"
 
 FMTI *fmti = NULL;
@@ -151,12 +150,7 @@ void dumpFMTI(FMTI *p)
         return;
     
     sim_printf("name:            %s\n", p->multics.name);
-//    sim_printf("baud:            %s\n", p->multics.baud);
-//    sim_printf("terminal_type:   %s\n", p->multics.terminal_type);
-//    sim_printf("attributes:      %s\n", p->multics.attributes);
-//    sim_printf("initial_command: %s\n", p->multics.initial_command);
-//    sim_printf("comment:         %s\n", p->multics.comment);
-    
+
     ATTRIBUTE *current, *tmp;
     
     HASH_ITER(hh, p->multics.attrs, current, tmp)
@@ -176,16 +170,9 @@ char *strFMTI(FMTI *p, int line)
     static char str[1024];
     const int len = sizeof(str);
     
-    snprintf(str, len,
-    "\r\nLine %d connected as\r\n"
-    "name:            %s\r\n",
-//    "baud:            %s\r\n"
-//    "terminal_type:   %s\r\n"
-//    "attributes:      %s\r\n"
-//    "initial_command: %s\r\n"
-//    "comment:         %s\r\n"
-//    "\n", line,
-       line,      p->multics.name    //,  p->multics.baud, p->multics.terminal_type, p->multics.attributes, p->multics.initial_command, p->multics.comment
+    snprintf(str, len, "\r\nLine %d connected as\r\n"
+             "name:            %s\r\n",
+             line,      p->multics.name
     );
     
     ATTRIBUTE *current, *tmp;
@@ -219,12 +206,6 @@ void freeFMTI(FMTI *p, bool bRecurse)
         {
             FREE(p->multics.name);
         
-//            FREE(p->multics.baud);
-//            FREE(p->multics.terminal_type);
-//            FREE(p->multics.attributes);
-//            FREE(p->multics.initial_command);
-//            FREE(p->multics.comment);
-            
             ATTRIBUTE *current, *tmp;
             HASH_ITER(hh, p->multics.attrs, current, tmp)
             {
@@ -252,13 +233,7 @@ void freeFMTI(FMTI *p, bool bRecurse)
     } else {
     
         FREE(p->multics.name);
-    
-//        FREE(p->multics.baud);
-//        FREE(p->multics.terminal_type);
-//        FREE(p->multics.attributes);
-//        FREE(p->multics.initial_command);
-//        FREE(p->multics.comment);
-   
+       
         ATTRIBUTE *current, *tmp;
         HASH_ITER(hh, p->multics.attrs, current, tmp)
         {
@@ -481,16 +456,6 @@ FMTI * readDevInfo(FILE *src)
             if (!res)
                 current->multics.regex = strdup(regx);
         }
-//        else if (strcmp(first, "comment") == 0)
-//            current->multics.comment  = strdup(trim(second));
-//        else if (strcmp(first, "terminal_type") == 0)
-//            current->multics.terminal_type  = strdup(trim(second));
-//        else if (strcmp(first, "attributes") == 0)
-//            current->multics.attributes  = strdup(trim(second));
-//        else if (strcmp(first, "initial_command") == 0)
-//            current->multics.initial_command  = strdup(trim(second));
-//        else
-//            sim_printf("Unknown terminal attribute '%s'\n", first);
         else
         {
             if (searchForAttribute(first, current->multics.attrs))

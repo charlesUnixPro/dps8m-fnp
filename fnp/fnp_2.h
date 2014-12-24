@@ -12,9 +12,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include <regex.h>
-
 #include "uthash.h"
+
+#ifdef XCODE_FIX
+#include <regex.h>
+#endif
 
 #include "fnp_defs.h"
 
@@ -44,11 +46,6 @@ struct fauxMulticsTerminalInfo
         regex_t r;         // optional regex to match name
         char    *regex;    // text of optional regex
         
-//        char    *baud;     // baud rate
-//        char    *comment;  // comment
-//        char    *terminal_type;
-//        char    *attributes;
-//        char    *initial_command;
         ATTRIBUTE   *attrs;
     } multics;
 
