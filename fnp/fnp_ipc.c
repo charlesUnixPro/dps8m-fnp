@@ -6,9 +6,14 @@
 //  Copyright (c) 2014 Harry Reed. All rights reserved.
 //
 
+#ifdef VM_FNP
 #include "fnp_defs.h"
 
 #include "fnp_mux.h"
+#endif
+#ifdef VM_DPS8
+
+#endif
 
 #include "fnp_ipc.h"
 
@@ -67,8 +72,8 @@ MTAB ipc_mod[] = {
 
 
 DEBTAB ipc_dbg[] = {
-    {"TRACE",   DBG_TRACE  },
-    {"VERBOSE", DBG_VERBOSE},
+    {"TRACE",   DBG_IPCTRACE  },
+    {"VERBOSE", DBG_IPCVERBOSE},
     {0}
 };
 
@@ -297,7 +302,7 @@ ipc_actor (zsock_t *pipe, void *args)
         return;
     }
     
-    sim_printf("Starting IPC node %s ...", name);
+    ipc_printf("Starting IPC node %s ...", name);
 
     if (ipc_verbose)
         zyre_set_verbose (node);  // uncomment to watch the events
@@ -311,7 +316,7 @@ ipc_actor (zsock_t *pipe, void *args)
     poller = zpoller_new (pipe, zyre_socket (node), NULL);
     assert(poller);
     
-    sim_printf(" done\n");
+    ipc_printf(" done\n");
 
     while (!terminated)
     {
@@ -338,7 +343,7 @@ ipc_actor (zsock_t *pipe, void *args)
                     zyre_whispers (node, IPC_GROUP, "%s", string);
                 } else
                 {
-                    sim_debug (DBG_VERBOSE, &ipc_dev,"ipc_actor(): E: invalid message to actor");
+                    sim_debug (DBG_IPCVERBOSE, &ipc_dev,"ipc_actor(): E: invalid message to actor");
                     //assert (false);
                 }
             free (command);
@@ -372,8 +377,8 @@ ipc_actor (zsock_t *pipe, void *args)
 
             if (ipc_verbose)
             {
-                sim_printf("Message from node\n");
-                sim_printf("event: %s peer: %s  name: %s group: %s message: %s\n", event, peer, name, group, message);
+                ipc_printf("Message from node\n");
+                ipc_printf("event: %s peer: %s  name: %s group: %s message: %s\n", event, peer, name, group, message);
             }
             free (event);
             free (peer);
@@ -421,19 +426,19 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             break;
             
         case ipcDisable:
-            sim_printf("Stopping IPC ... ");
+            ipc_printf("Stopping IPC ... ");
             killIPC();
-            sim_printf("done\n");
+            ipc_printf("done\n");
             break;
          
         case ipcEnter:
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s/%s has entered " STR(IPC_GROUP) "\n", arg1, arg2);
-            sim_printf("(ENTER)      %s/%s has entered " IPC_GROUP " from %s\n", arg1, arg2, arg3);
+            ipc_printf("(ENTER)      %s/%s has entered " IPC_GROUP " from %s\n", arg1, arg2, arg3);
             break;
             
         case ipcExit:
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s has left " STR(IPC_GROUP) "\n", arg1);
-            sim_printf("(EXIT)       %s/%s has left " IPC_GROUP "\n", arg1, arg2);
+            ipc_printf("(EXIT)       %s/%s has left " IPC_GROUP "\n", arg1, arg2);
             break;
             
         case ipcShoutTx:
@@ -446,11 +451,11 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
     
         case ipcShoutRx:
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
-            sim_printf("(RX SHOUT)   %s/%s:<%s>\n", arg1, arg2, arg3);
+            ipc_printf("(RX SHOUT)   %s/%s:<%s>\n", arg1, arg2, arg3);
             break;
         case ipcWhisperRx:
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
-            sim_printf("(RX WHISPER) %s/%s:<%s>\n", arg1, arg2, arg3);
+            ipc_printf("(RX WHISPER) %s/%s:<%s>\n", arg1, arg2, arg3);
             break;
 
         case ipcTest:

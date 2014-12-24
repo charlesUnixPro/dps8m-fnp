@@ -13,6 +13,7 @@
 
 #include "fnp_defs.h"
 #include "fnp_2.h"
+#include "fnp_ipc.h"
 
 
 /* SCP data structures and interface routines
@@ -129,8 +130,8 @@ t_stat sim_instr (void)
     
     ipc_enable = !(ipc_dev.flags & DEV_DIS);
     
-    ipc_verbose = (ipc_dev.dctrl & DBG_VERBOSE) && sim_deb;
-    ipc_trace   = (ipc_dev.dctrl & DBG_TRACE  ) && sim_deb;
+    ipc_verbose = (ipc_dev.dctrl & DBG_IPCVERBOSE) && sim_deb;
+    ipc_trace   = (ipc_dev.dctrl & DBG_IPCTRACE  ) && sim_deb;
     if (!ipc_enable)
         sim_printf("Warning: IPC not enabled.\n");
     else

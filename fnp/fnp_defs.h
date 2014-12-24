@@ -196,28 +196,6 @@ extern int32 mux_tmxr_poll;                                /* tmxr poll */
 extern int32 mux_int_req, mux_busy, mux_done, mux_disable;
 extern int32 mux_chars_Rx;   //saved_PC;
 
-extern int32 ipc_enable, ipc_verbose, ipc_trace;
-
-
-#define DBG_TRACE       1
-#define DBG_VERBOSE     2
-
-enum enum_ipc_funcs
-{
-    ipcUnknown = 0, // unknown IPC state
-    ipcEnable,      // local IPC enable
-    ipcDisable,     // local IPC disable
-    ipcEnter,       // another peer has ENTERed the IPC group
-    ipcExit,        // a peer has EXITed the IPC group
-    ipcShoutRx,     // we've received a SHOUT (broadcast) message
-    ipcShoutTx,     // we're SHOUTing (broadcasting) a IPC message to all connected peers
-    ipcWhisperRx,   // we've received a WHISPER (peer-to-peer) messsage
-    ipcWhisperTx,   // we're WHISPERing a IPC message to a peer
-    ipcTest,        // perform IPC test mode
-};
-typedef enum enum_ipc_funcs ipc_funcs;
-
-t_stat  ipc (ipc_funcs, char *arg1, char *arg2, char *arg3, int32 arg4);
 
 
 #endif
