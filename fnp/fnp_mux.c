@@ -47,9 +47,21 @@ char *fnpNames[16] = { _FNP0,  _FNP1,  _FNP2,  _FNP3,
                        _FNP8,  _FNP9,  _FNP10, _FNP11,
                        _FNP12, _FNP13, _FNP14, _FNP15};
 
-UNIT mux_unit[4] =
+UNIT mux_unit[16] =
 {
 //        UDATA (&mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0)
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
     { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
     { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
     { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
@@ -636,9 +648,9 @@ DEVICE mux_dev = {
     mux_unit,  // unit
     mux_reg,    // registers
     mux_mod,    // modifiers
-    4,          // numunits
+    16,         // numunits
     8,          // aradix
-    36,         // weidth
+    36,         // width
     1,          // aincr
     8,          // dradix
     36,         // dwidth

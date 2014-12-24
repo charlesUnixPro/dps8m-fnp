@@ -164,7 +164,7 @@ typedef struct {
 } DIB;
 
 
-extern UNIT mux_unit[4];
+extern UNIT mux_unit[16];
 extern DEVICE clk_dev, mux_dev, tti_dev, tto_dev, ipc_dev;
 
 int mux_update_status( DIB * dibp, TMXR * tmxr_desc );
