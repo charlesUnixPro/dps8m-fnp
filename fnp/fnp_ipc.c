@@ -35,6 +35,10 @@ t_stat ipc_reset (DEVICE *dptr);
  ipc_reg      IPC register list
  */
 
+char fnpName[32] = IPC_NODE;
+char fnpGroup[32] = IPC_GROUP;
+
+
 #ifdef VM_FNP
 DIB ipc_dib = { MUX_INT_CLK, MUX_INT_CLK, PI_CLK, &clk };
 #endif

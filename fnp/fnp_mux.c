@@ -43,33 +43,9 @@ int     mux_line_mask   = 0x003F ;           /*  maximum of 64 lines in this rev
 
 int32 mux_int_req, mux_busy, mux_done, mux_disable;
 
-//char *fnpNames[16] = { _FNP0,  _FNP1,  _FNP2,  _FNP3,
-//                       _FNP4,  _FNP5,  _FNP6,  _FNP7,
-//                       _FNP8,  _FNP9,  _FNP10, _FNP11,
-//                       _FNP12, _FNP13, _FNP14, _FNP15};
-
-char fnpName[32] = IPC_NODE;
-char fnpGroup[32] = IPC_GROUP;
-
 UNIT mux_unit =
 {
       UDATA (&mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0)
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) }
 } ;
 
 DIB mux_dib = { DEV_FNPMUX, FNP_INT_MUX, PI_MUX, &mux } ;

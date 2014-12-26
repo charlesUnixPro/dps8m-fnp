@@ -77,7 +77,8 @@ t_stat ipc_whisper (int32 arg, char *buf);
 #define ipc_printf(...) sim_printf (__VA_ARGS__)
 #endif
 #ifdef VM_DPS8
-#define ipc_printf(...) sim_debug (DBG_IPCVERBOSE, &ipc_dev, __VA_ARGS__)
+//#define ipc_printf(...) sim_debug (DBG_IPCVERBOSE, &ipc_dev, __VA_ARGS__)
+#define ipc_printf(...) sim_printf (__VA_ARGS__)
 #endif
 
 #endif /* defined(__fnp__fnp_ipc__) */
