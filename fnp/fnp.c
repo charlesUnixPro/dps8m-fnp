@@ -140,14 +140,21 @@ t_stat sim_instr (void)
     if (u->filename == NULL || strlen(u->filename) == 0)
         sim_printf("Warning: MUX not attached.\n");
     
-    bool ipc_running = isIPCRunning();  // IPC running on sim_instr() entry?
-    
     ipc_verbose = (ipc_dev.dctrl & DBG_IPCVERBOSE) && sim_deb;
     ipc_trace   = (ipc_dev.dctrl & DBG_IPCTRACE  ) && sim_deb;
-    if (!ipc_running)
+    
+    bool ipc_running = false;
+    if (!isIPCEnabled())
+        sim_printf("Warning: IPC not enabled.\n");
+    else
     {
-        sim_printf("Info: ");
-        ipc(ipcStart, fnpName,0,0,0);
+        ipc_running = isIPCRunning();  // IPC running on sim_instr() entry?
+    
+        if (!ipc_running)
+        {
+            sim_printf("Info: ");
+            ipc(ipcStart, fnpName,0,0,0);
+        }
     }
     
     TMXR *tmxr = &mux_desc;
@@ -195,8 +202,8 @@ t_stat sim_instr (void)
         n += 1;
     }
     
-    // if IPC was running before G leave it running - don't stop it, else stop it
-    if (!ipc_running)
+    // if IPC was running before G leave it running - don't stop it, else stop it if it was started in sim_instr()
+    if (isIPCEnabled() && !ipc_running)
         ipc(ipcStop, 0, 0, 0, 0);     // stop IPC operation
 
     return SCPE_OK;

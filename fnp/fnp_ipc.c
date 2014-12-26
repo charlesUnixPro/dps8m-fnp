@@ -8,20 +8,32 @@
 
 #ifdef VM_FNP
 #include "fnp_defs.h"
-
+#include "fnp_utils.h"
 #include "fnp_mux.h"
 #endif
 #ifdef VM_DPS8
 #include "sim_defs.h"
+#include <stdbool.h>
+
+char *stripquotes(char *s);
+char *trim(char *s);
+char *Strtok(char *, char *);
+bool startsWith(const char *str, const char *pre);
+
+void sim_printf (const char* fmt, ...);
+
 #endif
 
-#include "fnp_utils.h"
 #include "fnp_ipc.h"
 
 t_stat set_prompt (int32 flag, char *cptr);
 
+
 int32 ipc_verbose = 0;
 int32 ipc_trace = 0;
+
+char fnpName[32] = IPC_NODE;
+char fnpGroup[32] = IPC_GROUP;
 
 IPC_Peer *Peers = NULL;      // for peer name <=> id map
 
@@ -34,10 +46,6 @@ t_stat ipc_reset (DEVICE *dptr);
  ipc_unit     IPC unit descriptor
  ipc_reg      IPC register list
  */
-
-char fnpName[32] = IPC_NODE;
-char fnpGroup[32] = IPC_GROUP;
-
 
 #ifdef VM_FNP
 DIB ipc_dib = { MUX_INT_CLK, MUX_INT_CLK, PI_CLK, &clk };
@@ -154,7 +162,7 @@ DEVICE ipc_dev = {
 #else
     NULL,
 #endif
-    DEV_DEBUG,  //DEV_DIS | DEV_DISABLE | DEV_DEBUG,
+    DEV_DIS | DEV_DISABLE | DEV_DEBUG,
     0,
     ipc_dbg
 };
@@ -169,11 +177,11 @@ t_stat ipc_svc (UNIT *uptr)
 
 /* Reset routine */
 t_stat ipc_reset (DEVICE *dptr)
-{    
-//    if ((dptr->flags & DEV_DIS) == 0)
-//    {
-//        if (dptr == &ipc_dev) ipc_unit.flags |= DEV_DIS;
-//    }
+{
+    //    if ((dptr->flags & DEV_DIS) == 0)
+    //    {
+    //        if (dptr == &ipc_dev) ipc_unit.flags |= DEV_DIS;
+    //    }
     
     //sim_cancel (&ipc_unit);                                 /* deactivate unit */
     return SCPE_OK;
@@ -185,15 +193,15 @@ t_stat ipc_reset (DEVICE *dptr)
  */
 static bool isGUID(char *s)
 {
-   if (strlen(s) != 32)
-       return false;
+    if (strlen(s) != 32)
+        return false;
     
-   while (*s)
-   {
-       if (!isxdigit(*s))
-           return false;
-       s += 1;
-   }
+    while (*s)
+    {
+        if (!isxdigit(*s))
+            return false;
+        s += 1;
+    }
     return true;
 }
 
@@ -248,7 +256,7 @@ static void ipc_actor (zsock_t *pipe, void *args)
     }
     
     ipc_printf("Starting IPC node %s ...", name);
-
+    
     if (ipc_verbose)
         zyre_set_verbose (node);  // uncomment to watch the events
     
@@ -262,7 +270,7 @@ static void ipc_actor (zsock_t *pipe, void *args)
     assert(poller);
     
     ipc_printf(" done\n");
-
+    
     while (!terminated)
     {
         void *which = zpoller_wait (poller, -1); // no timeout
@@ -319,7 +327,7 @@ static void ipc_actor (zsock_t *pipe, void *args)
             {
                 ipc(ipcWhisperRx, name, peer, group, 0);
             }
-
+            
             if (ipc_verbose)
             {
                 ipc_printf("Message from node\n");
@@ -338,10 +346,10 @@ static void ipc_actor (zsock_t *pipe, void *args)
 void killIPC()
 {
     terminated = true;                           // tell IPC actor to kill itself
-
+    
     if (actor)
         zactor_destroy (&actor);
-
+    
     if (poller)
         zpoller_destroy (&poller);
     
@@ -362,20 +370,25 @@ bool isIPCRunning()
 {
     return actor ? true : false;
 }
+bool isIPCEnabled()
+{
+    return !(ipc_dev.flags & DEV_DIS); // IPC disabled?
+}
 
 t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
 {
+    //    if (!checkIPC())
+    //        return SCPE_UDIS;
+    
     switch (fn)
     {
         case ipcStart:
-            {
-                if (actor)
-                    killIPC();
-                
-                actor = zactor_new (ipc_actor, arg1);
-                assert (actor);
-            }
-            strcpy(lastPeer, "");
+            if (actor)
+                killIPC();
+            
+            actor = zactor_new (ipc_actor, arg1);
+            assert (actor);
+            deletePeers();          // remove all peers
             
             break;
             
@@ -385,7 +398,7 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             ipc_printf("deleted %d peers ... ", deletePeers());
             ipc_printf("done\n");
             break;
-         
+            
         case ipcRestart:
             ipc(ipcStop, 0, 0, 0, 0);           // kill IPC
             deletePeers();
@@ -429,7 +442,7 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             
             zstr_sendx (actor, "WHISPER", arg2, NULL);
             break;
-    
+            
         case ipcShoutRx:    // when we receive a broadcast message
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
             ipc_printf("(RX SHOUT)   %s/%s:<%s>\n", arg1, arg2, arg3);
@@ -438,7 +451,7 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
             ipc_printf("(RX WHISPER) %s/%s:<%s>\n", arg1, arg2, arg3);
             break;
-
+            
         case ipcTest:
             zyre_test(true);
             break;
@@ -456,6 +469,8 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
 static
 t_stat Test (FILE *st, UNIT *uptr, int32 val, void *desc)
 {
+    sim_printf("Test: IPC not enabled.\n");
+    
     return ipc(ipcTest, 0, 0, 0, 0);
 }
 
@@ -484,17 +499,17 @@ static t_stat ipc_set_node (UNIT *uptr, int32 val, char *cval, void *desc)
     else
     {
         stripquotes(cval);
-    
+        
         if (!startsWith(cval, "fnp"))
             sim_printf("WARNING: Node name <%s> does not begin with 'fnp'\n", cval);
-    
+        
         strcpy(fnpName, cval);
 #ifdef VM_FNP
         char temp[132];
         sprintf(temp, "%s>", fnpName);
         set_prompt(0, temp);
 #endif
-
+        
     }
     
     // if IPC is already running, resrart it with new node
@@ -564,16 +579,26 @@ static t_stat ipc_remove_peers (UNIT *uptr, int32 val, char *c, void *desc)
  */
 t_stat ipc_shout (int32 arg, char *buf)
 {
+    if (!isIPCEnabled())
+    {
+        sim_printf("Shout: IPC not enabled.\n");
+        return SCPE_OK;
+    }
     if (!isIPCRunning())
     {
         sim_printf("Shout: IPC not running.\n");
         return SCPE_OK;
     }
-    return ipc(ipcShoutTx, buf, 0, 0, 0);
+    return ipc(ipcShoutTx, stripquotes(trim(buf)), 0, 0, 0);
 }
 
 t_stat ipc_whisper (int32 arg, char *buf)
 {
+    if (!isIPCEnabled())
+    {
+        sim_printf("Whisper: IPC not enabled.\n");
+        return SCPE_OK;
+    }
     if (!isIPCRunning())
     {
         sim_printf("Whisper: IPC not running.\n");
@@ -589,7 +614,7 @@ t_stat ipc_whisper (int32 arg, char *buf)
     
     if (a1 && a2)       // peer, message
     {
-        peer = a1;
+        peer = stripquotes(trim(a1));
         msg = stripquotes(trim(a2));
     } else if (a1 && !a2)
     {
@@ -599,7 +624,7 @@ t_stat ipc_whisper (int32 arg, char *buf)
         sim_printf("Usage: whisper peer, message\n");
         return SCPE_ARG;
     }
-     
+    
     return ipc(ipcWhisperTx, peer, msg, 0, 0);
 }
 
@@ -608,7 +633,7 @@ t_stat ipc_whisper (int32 arg, char *buf)
  */
 
 #define FREE(t)     \
-    if (t) { free(t); t = 0; }
+if (t) { free(t); t = 0; }
 
 // enter peer into list (if possible)
 IPC_Peer *savePeer(char *name, char *id)
@@ -648,7 +673,7 @@ bool removePeer(char *name)
     FREE(s->peerID);
     FREE(s->peerName);
     FREE(s);
-
+    
     sim_printf("removed peer %s\n", name);
     
     return true;
@@ -669,6 +694,8 @@ int deletePeers()
         n += 1;
     }
     Peers = 0;
+    
+    strcpy(lastPeer, "");   // no last peer
     
     return n;
 }
