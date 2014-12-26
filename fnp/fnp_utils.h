@@ -37,6 +37,7 @@ char *Strdup(char *s, int size);
 char *strrev(char *s);
 int strcpyWhile(char *dst, char *src, int (*f)(int));
 char *strlower(char *q);
+bool startsWith(const char *str, const char *pre);
 
 #define strsep  "Replaced w/ Strsep()"
 

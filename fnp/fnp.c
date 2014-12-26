@@ -57,6 +57,24 @@ void freeFMTI(FMTI *p, bool bRecurse);
 
 extern FMTI *fmti;
 
+static CTAB fnp_cmds[] =
+{
+    {"SHOUT",  ipc_shout,       0, "Shout (broadcast) message to all connected peers\n", NULL},
+    {"WHISPER",ipc_whisper,     0, "Whisper (per-to-peer) message to specified peer\n", NULL},
+
+    { NULL, NULL, 0, NULL, NULL}
+};
+
+// Once-only initialization
+
+static void fnp_init(void)
+{
+    // These are part of the simh interface
+    
+    sim_vm_cmd = fnp_cmds;
+}
+void (*sim_vm_init) (void) = &fnp_init;    //CustomCmds;
+
 t_stat sim_load (FILE *fileref, char *cptr, char *fnam, int flag)
 {
     if (flag == 1)
@@ -118,24 +136,19 @@ t_stat sim_instr (void)
     clk(STCLK, 0, 0);        // start clock
     mux(SLS, 0, 0);
     
-    
-    //UNIT *u = &mux_unit;
-    //if (u->filename == NULL || strlen(u->filename) == 0)
-    
-    int32 muxU = muxWhatUnitAttached(); // what (if any) mux device is attached?
-    if (muxU == -1)
+    UNIT *u = &mux_unit;
+    if (u->filename == NULL || strlen(u->filename) == 0)
         sim_printf("Warning: MUX not attached.\n");
-    //else
-    //    mux_desc.lines = nTTYdevs;
     
-    ipc_enable = !(ipc_dev.flags & DEV_DIS);
+    bool ipc_running = isIPCRunning();  // IPC running on sim_instr() entry?
     
     ipc_verbose = (ipc_dev.dctrl & DBG_IPCVERBOSE) && sim_deb;
     ipc_trace   = (ipc_dev.dctrl & DBG_IPCTRACE  ) && sim_deb;
-    if (!ipc_enable)
-        sim_printf("Warning: IPC not enabled.\n");
-    else
-        ipc(ipcEnable, 0, 0, 0, muxU);                // start IPC beacon for muxU
+    if (!ipc_running)
+    {
+        sim_printf("Info: ");
+        ipc(ipcStart, fnpName,0,0,0);
+    }
     
     TMXR *tmxr = &mux_desc;
 
@@ -182,8 +195,9 @@ t_stat sim_instr (void)
         n += 1;
     }
     
-    if (ipc_enable)
-        ipc(ipcDisable, 0, 0, 0, muxU);     // stop IPC operation
+    // if IPC was running before G leave it running - don't stop it, else stop it
+    if (!ipc_running)
+        ipc(ipcStop, 0, 0, 0, 0);     // stop IPC operation
 
     return SCPE_OK;
 }

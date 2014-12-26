@@ -148,8 +148,8 @@ ipc_actor (zsock_t *pipe, void *args)
                 printf ("W %s:%s:%s\n", name, peer, group); // group here := message
             }
             
-            printf ("Message from node\n");
-            printf ("event: %s peer: %s  name: %s\n  group: %s message: %s\n", event, peer, name, group, message);
+            //printf ("Message from node\n");
+            //printf ("event: %s peer: %s  name: %s\n  group: %s message: %s\n", event, peer, name, group, message);
             
             free (event);
             free (peer);

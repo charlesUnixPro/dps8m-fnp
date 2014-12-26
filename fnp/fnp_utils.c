@@ -33,6 +33,8 @@ char *strrev(char *str) /// in-place strrev()
 char *
 stripquotes(char *s)
 {
+    if (! s || ! *s)
+        return s;
 /*
     char *p;
     
@@ -555,4 +557,11 @@ char *Now()
         exit(EXIT_FAILURE);
     }
     return outstr;
+}
+
+bool startsWith(const char *str, const char *pre)
+{
+    size_t lenpre = strlen(pre),
+    lenstr = strlen(str);
+    return lenstr < lenpre ? false : strncasecmp(pre, str, lenpre) == 0;
 }

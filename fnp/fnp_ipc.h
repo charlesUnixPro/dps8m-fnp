@@ -16,10 +16,18 @@
 
 #include "zyre.h"
 
+#include "uthash.h"
 
-#define IPC_GROUP    "MulticsIPC"       // name of zyre group
+#define IPC_GROUP    "MulticsIPC"       // default zyre group
 
-extern int32 ipc_enable, ipc_verbose, ipc_trace;
+#ifdef VM_FNP
+#define IPC_NODE     "fnp"              // default node name
+#endif
+#ifdef VM_DPS8
+#define IPC_NODE     "MulticsCS"        // default node name
+#endif
+
+extern int32 ipc_verbose, ipc_trace;
 
 
 #define DBG_IPCTRACE        1
@@ -28,8 +36,9 @@ extern int32 ipc_enable, ipc_verbose, ipc_trace;
 enum enum_ipc_funcs
 {
     ipcUnknown = 0, // unknown IPC state
-    ipcEnable,      // local IPC enable
-    ipcDisable,     // local IPC disable
+    ipcStart,       // local IPC start
+    ipcStop,        // local IPC stop
+    ipcRestart,     // local IPC restart
     ipcEnter,       // another peer has ENTERed the IPC group
     ipcExit,        // a peer has EXITed the IPC group
     ipcShoutRx,     // we've received a SHOUT (broadcast) message
@@ -40,7 +49,29 @@ enum enum_ipc_funcs
 };
 typedef enum enum_ipc_funcs ipc_funcs;
 
+struct _IPC_peer {
+    char *peerName;
+    char *peerID;
+    
+    UT_hash_handle hh;
+};
+typedef struct _IPC_peer IPC_Peer;
+
+extern IPC_Peer *Peers;
+
+IPC_Peer *savePeer(char *name, char *id);
+IPC_Peer *findPeer(char *name);
+bool     removePeer(char *name);
+int      deletePeers();
+
 t_stat  ipc (ipc_funcs, char *arg1, char *arg2, char *arg3, int32 arg4);
+
+bool isIPCRunning();
+
+
+t_stat ipc_shout   (int32 arg, char *buf);
+t_stat ipc_whisper (int32 arg, char *buf);
+
 
 #ifdef VM_FNP
 #define ipc_printf(...) sim_printf (__VA_ARGS__)

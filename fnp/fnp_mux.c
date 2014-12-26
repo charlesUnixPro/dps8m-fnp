@@ -17,6 +17,7 @@
 
 #include "fnp_defs.h"
 
+#include "fnp_ipc.h"
 #include "fnp_mux.h"
 #include "fnp_2.h"
 
@@ -42,30 +43,33 @@ int     mux_line_mask   = 0x003F ;           /*  maximum of 64 lines in this rev
 
 int32 mux_int_req, mux_busy, mux_done, mux_disable;
 
-char *fnpNames[16] = { _FNP0,  _FNP1,  _FNP2,  _FNP3,
-                       _FNP4,  _FNP5,  _FNP6,  _FNP7,
-                       _FNP8,  _FNP9,  _FNP10, _FNP11,
-                       _FNP12, _FNP13, _FNP14, _FNP15};
+//char *fnpNames[16] = { _FNP0,  _FNP1,  _FNP2,  _FNP3,
+//                       _FNP4,  _FNP5,  _FNP6,  _FNP7,
+//                       _FNP8,  _FNP9,  _FNP10, _FNP11,
+//                       _FNP12, _FNP13, _FNP14, _FNP15};
 
-UNIT mux_unit[16] =
+char fnpName[32] = IPC_NODE;
+char fnpGroup[32] = IPC_GROUP;
+
+UNIT mux_unit =
 {
-//        UDATA (&mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0)
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
-    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) }
+      UDATA (&mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0)
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) },
+//    { UDATA (mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0) }
 } ;
 
 DIB mux_dib = { DEV_FNPMUX, FNP_INT_MUX, PI_MUX, &mux } ;
@@ -124,7 +128,7 @@ int32 mux( int32 oper, int32 oper2, int32 AC )
                         if ( MUX_LINE_BIT_SET(mux_line,MUX_L_TXE) )
                         {
                              //int drv = (int32) (uptr - mux_dev.units);                    /* get drive # */
-                             int drv = muxWhatUnitAttached();
+                             //int drv = muxWhatUnitAttached();
                              //uptr = mux_dev.units + drv;                              /* get unit */
                             
                             /*
@@ -132,7 +136,7 @@ int32 mux( int32 oper, int32 oper2, int32 AC )
                              7 bit/ 8 bit
                              parity generation
                              */
-                            kar = AC & ((mux_unit[drv].flags & UNIT_8B)? 0377: 0177) ;
+                            kar = AC & ((mux_unit.flags & UNIT_8B)? 0377: 0177) ;
                             /*  do any parity calculations also  */
                         
                             tmlnp = &mux_ldsc[ mux_line ] ;
@@ -294,12 +298,12 @@ REG *sim_PC = &mux_reg[0];
 
 t_stat mux_attach(UNIT *unitp, char *cptr)
 {
-    int muxU = muxWhatUnitAttached();
-    if (muxU != -1)
-        return SCPE_ALATT;  // a mux unit is already attached. Only can have 1 MUX unix per instance of simh
-    
-    muxU = (int32) (unitp - mux_dev.units);                    /* get mux # */
-    sim_printf("Multiplexor attached as %s\n", fnpNames[muxU]);
+//    int muxU = muxWhatUnitAttached();
+//    if (muxU != -1)
+//        return SCPE_ALATT;  // a mux unit is already attached. Only can have 1 MUX unix per instance of simh
+//    
+//    muxU = (int32) (unitp - mux_dev.units);                    /* get mux # */
+    sim_printf("Multiplexor attached as %s\n", fnpName);    //s[muxU]);
     
     //uptr = mux_dev.units + drv;
     
@@ -341,13 +345,13 @@ t_stat mux_attach(UNIT *unitp, char *cptr)
 
 t_stat mux_detach( UNIT * unitp )
 {
-    int muxU1 = muxWhatUnitAttached();              // what is attached
-    int muxU2 = (int32) (unitp - mux_dev.units);    // what wants to be detached
+    //int muxU1 = muxWhatUnitAttached();              // what is attached
+    //int muxU2 = (int32) (unitp - mux_dev.units);    // what wants to be detached
     
-    if (muxU1 == -1 || muxU1 != muxU2)      // nothing is attached or requesting detach of non attached unit
-        return SCPE_NOTATT;                 // no mux unit is attached.
+    //if (muxU1 == -1 || muxU1 != muxU2)      // nothing is attached or requesting detach of non attached unit
+    //    return SCPE_NOTATT;                 // no mux unit is attached.
     
-    sim_printf("Multiplexor %s detached\n", fnpNames[muxU2]);
+    sim_printf("Multiplexor %s detached\n", fnpName);   //s[muxU2]);
 
     sim_cancel( unitp ) ;
     return ( tmxr_detach(&mux_desc,unitp) ) ;
@@ -644,11 +648,10 @@ t_stat mux_svc(UNIT * unitp )
 
 DEVICE mux_dev = {
     "MUX",      // name
-//    &mux_unit,  // unit
-    mux_unit,  // unit
+    &mux_unit,  // unit
     mux_reg,    // registers
     mux_mod,    // modifiers
-    16,         // numunits
+    1,         // numunits
     8,          // aradix
     36,         // width
     1,          // aincr
@@ -674,8 +677,7 @@ DEVICE mux_dev = {
 t_stat  mux_reset(DEVICE *dptr)
 {
     //DIB *dibp = &mux_dib;
-//    UNIT *unitp = &mux_unit;
-    UNIT *unitp = mux_unit;
+    UNIT *unitp = &mux_unit;
     
 //    if ((dptr->flags & DEV_DIS) == 0)
 //    {
@@ -712,14 +714,14 @@ t_stat  mux_reset(DEVICE *dptr)
  * return integer indicating what mux device is currently attached. 
  * (returns -1 if no mux attached)
  */
-int32 muxWhatUnitAttached()
-{
-    for(int n = 0 ; n < 4 ; n += 1)
-    {
-        UNIT *u = mux_dev.units + n;
-        
-        if (u->filename != NULL && strlen(u->filename) != 0)
-            return n;
-    }
-    return -1;  // no mux unit attached
-}
+//int32 muxWhatUnitAttached()
+//{
+//    for(int n = 0 ; n < 4 ; n += 1)
+//    {
+//        UNIT *u = mux_dev.units + n;
+//        
+//        if (u->filename != NULL && strlen(u->filename) != 0)
+//            return n;
+//    }
+//    return -1;  // no mux unit attached
+//}
