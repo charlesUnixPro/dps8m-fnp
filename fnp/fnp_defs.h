@@ -15,6 +15,8 @@
 #include "sim_defs.h"
 #include "sim_tmxr.h"
 
+#include "fnp_rev.h"
+
 #define STR(s) #s
 
 #define MAX_LINES     64                                /*  max number of FNP lines - hardware  */
