@@ -2,13 +2,123 @@
 
 ## WHAT'S NEW
 
-### New Simulators
+### New FNP Simulator
 
-dps8/FNP - Faux front-end Network Processor (FNP) for Multics emulator
+dps8/FNP - Faux front-end Network Processor (FNP) for the dps8m Multics emulator
 
-NOTE: At ths time simh/FNP requires the latest Code Connected ZeroMQ \zero-em-queue\, \ØMQ\ messaging libraries zmq, czmq & zyre
+NOTE: 
+    1) At ths time simh/FNP requires the latest Code Connected ZeroMQ \zero-em-queue\, \ØMQ\ messaging libraries zmq, czmq & zyre
+    See  <http://www.zeromq.org/> and  <https://github.com/zeromq>
 
-See  <http://www.zeromq.org/> and  <https://github.com/zeromq>
+2) At this time simh/fnp provides no functional device connections to the Multics emulator. So, don't expect to login to Multics just yet as simh/dps8m is just starting to incorporate IPC mechanisms preparing for the FNP emulation. Sorry :-(
+
+
+The following special simh/fnp specific commands are currently supported:
+
+To run the zyre self-test:
+    show IPC test
+
+To enable/disable IPC operations:
+    set IPC enable/disable
+
+To start/stop the IPC service:
+    set IPC start/stop
+
+To set/show ipc node (default is 'fnp')
+    set IPC node=fnp    
+    (NOTE: when the node name is changed from 'fnp' to something else the sim prompt will become "NewNodeName>" to remind the user that the node name has changed. Changing the node name will allow multiple instances of sim/fnp to function as different FNPs)
+
+    show IPC node
+    
+To set/show IPC group (default is MulticsIPC):
+    show IPC group
+    set IPC group=MulticsIPC
+
+To set/show all IPC registered peers:
+    show IPC peers
+
+To remove all registered peers:
+    set IPC removepeers
+
+To attach telnet multiplexor to <port>:
+    attach MUX -am 12345
+
+To send a Broadcast message to all members (peers) of IPC group
+    shout "Broadcase message"
+
+To send a per-to-peer message:
+    whisper <PEER-NAME>,"<Message>" -or- <PEER-GUID>,"<Message>"
+or to send a message to the same peer as specified by the last 'whisper' commend.
+    whisper "<Message>"    
+
+To load device information:
+    load [-VA] Devices.txt   (Specifying the -V option selects the verbose mode. While the -A option appends the specified device list to the existing device list.)
+
+After the user has entered the 'g' mode (by entering 'g' at the sim> prompt) the followoing single letter connands will take effect:
+    'd' = disconnect all telnet connections
+    's' = show summary line statistics on all telnet connections
+    't' = persorm zyre self-test (same as 'show IPC test')
+    'q' = quit. Return to the sim> prompt
+
+
+sim> set IPC enable
+sim> set IPC start
+sim> load -V Devices.txt
+sim> attach MUX -am 12345   <== or whatever port number you desire. 
+sim> g
+
+(At this point the user can telnet into simh/fnp via the *NIX shell command 'telnet localhost 12345') and receive the following prompt:
+
+    Trying ::1...
+    Connected to localhost.
+    Escape character is '^]'.
+
+    Connected to the FNP (Multics Faux FNP) simulator MUX device, line 0
+
+    HSLA Port (d.h002,d.h006,d.h012,d.h013,d.h014,d.h015,d.h022,d.h023)? 
+
+
+The user should then enter one of the Multics Faux devices as listed as shown below:
+
+    HSLA Port (d.h002,d.h006,d.h012,d.h013,d.h014,d.h015,d.h022,d.h023)? d.h002
+    Line 0 connected as
+    name:            d.h002
+    baud:            auto
+    comment:         "cable 12319, X-6400, Vadic VA3467."
+
+(To terminate the telnet connection the user can enter either the <ESC> or ^C characters to return the user to the *NIX command prompt._)
+After a telnet session with simh/fnp is established the telnet input is echoed back to the telnet client.
+
+N.B.: While executing in the 'g' mode a variety of messages will appear indicating connection status, etc. To return to the sim> prompt enter a single 'q.'
+
+After returning back to the sim> prompt, the IPC service should be stopped and the MUX detatched by entering the following commands at the sim> prompt
+
+sim> set IPC stop
+sim> detach MUX
+sim> q
+
+
+###And now for 'watcher'
+
+Watcher is derived from the zyre chat program and allows for limited eavesdropping on the IPC between nodes fnp and MulticsCS. To execute watcher from a *NIX shell just emter "./watcher -v newatcher" and the IPC node 'newatcher' will start up listening for IPC traffic with all sorts of information about detected peers and messages being displayed.
+
+You can send or receive broadcast or peer-to-peer messages via watcher. 
+
+To send a broadcast message to all connected peers just prepend a ! to the input line thusly...
+
+    !this will be a broadcast message.
+
+And the input line will be broadcast to all connected peers.
+
+To send a peer-to-peer message just type an input line (terminated by \n) and the message will be send to the last peer watcher found.
+    this is a per-to-peer message
+
+You can run two watcher programs and have then talk to each other - just specify two different nodeNames, e.g. w1 & w2.
+
+If you start up a watcher the start up simh/fnp you'll see both fnp and watcher exchange IPC traffic.
+
+To exit watcher just use enter your interrupt character - typically ^C
+
 
 
 ### New Host Platform support - HP-UX and AIX
