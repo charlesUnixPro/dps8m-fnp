@@ -9,8 +9,7 @@ dps8/FNP - Faux front-end Network Processor (FNP) for the dps8m Multics emulator
 NOTE: 
     1) At ths time simh/FNP requires the latest Code Connected ZeroMQ \zero-em-queue\, \ØMQ\ messaging libraries zmq, czmq & zyre
     See  <http://www.zeromq.org/> and  <https://github.com/zeromq>
-
-2) At this time simh/fnp provides no functional device connections to the Multics emulator. So, don't expect to login to Multics just yet as simh/dps8m is just starting to incorporate IPC mechanisms preparing for the FNP emulation. Sorry :-(
+	2) At this time simh/fnp provides no functional device connections to the Multics emulator. So, don't expect to login to Multics just yet as simh/dps8m is just starting to incorporate IPC mechanisms preparing for the FNP emulation. Sorry :-(
 
 
 The following special simh/fnp specific commands are currently supported:
@@ -27,7 +26,6 @@ To start/stop the IPC service:
 To set/show ipc node (default is 'fnp')
     set IPC node=fnp    
     (NOTE: when the node name is changed from 'fnp' to something else the sim prompt will become "NewNodeName>" to remind the user that the node name has changed. Changing the node name will allow multiple instances of sim/fnp to function as different FNPs)
-
     show IPC node
     
 To set/show IPC group (default is MulticsIPC):
@@ -52,7 +50,9 @@ or to send a message to the same peer as specified by the last 'whisper' commend
     whisper "<Message>"    
 
 To load device information:
-    load [-VA] Devices.txt   (Specifying the -V option selects the verbose mode. While the -A option appends the specified device list to the existing device list.)
+    load [-VA] Devices.txt   
+    
+    (NOTE: Specifying the -V option selects the verbose mode. While the -A option appends the specified device list to the existing device list.)
 
 After the user has entered the 'g' mode (by entering 'g' at the sim> prompt) the followoing single letter connands will take effect:
     'd' = disconnect all telnet connections
@@ -100,7 +100,7 @@ sim> q
 
 ###And now for 'watcher'
 
-Watcher is derived from the zyre chat program and allows for limited eavesdropping on the IPC between nodes fnp and MulticsCS. To execute watcher from a *NIX shell just emter "./watcher -v newatcher" and the IPC node 'newatcher' will start up listening for IPC traffic with all sorts of information about detected peers and messages being displayed.
+Watcher is derived from the zyre chat program and allows for limited eavesdropping on the IPC between the fnp and MulticsCS nodes. To execute watcher from a *NIX shell just emter "./watcher -v newatcher" and the IPC node 'newatcher' will start up listening for IPC traffic with all sorts of information about detected peers and messages being displayed.
 
 You can send or receive broadcast or peer-to-peer messages via watcher. 
 
@@ -110,10 +110,11 @@ To send a broadcast message to all connected peers just prepend a ! to the input
 
 And the input line will be broadcast to all connected peers.
 
-To send a peer-to-peer message just type an input line (terminated by \n) and the message will be send to the last peer watcher found.
-    this is a per-to-peer message
+To send a peer-to-peer message just type an input line (terminated by \n) and the message will be send to the last peer 'watcher' found.
 
-You can run two watcher programs and have then talk to each other - just specify two different nodeNames, e.g. w1 & w2.
+    this is a peer-to-peer message
+
+You can run two (or more) watcher instances and have them talk to each other - just specify differing nodeNames - e.g. w1 & w2.
 
 If you start up a watcher the start up simh/fnp you'll see both fnp and watcher exchange IPC traffic.
 
