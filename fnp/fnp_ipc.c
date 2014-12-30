@@ -709,7 +709,7 @@ int deletePeers()
     
     HASH_ITER(hh, Peers, current, tmp)
     {
-        HASH_DEL(Peers, current);  /* delete it (Peers advances to next) */
+        HASH_DEL(Peers, current);  /* delete it (current advances to next) */
         FREE(current->peerID);
         FREE(current->peerName);
         FREE(current);            /* free it */
