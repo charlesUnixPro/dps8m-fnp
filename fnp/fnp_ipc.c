@@ -26,7 +26,7 @@ void sim_printf (const char* fmt, ...);
 
 #include "fnp_ipc.h"
 
-t_stat set_prompt (int32 flag, char *cptr);
+t_stat set_prompt (int32 flag, char *cptr); // from scp.c:451
 
 
 int32 ipc_verbose = 0;
@@ -55,7 +55,7 @@ UNIT ipc_unit = { UDATA (&ipc_svc, UNIT_DISABLE, 0) };
 
 static t_stat ipc_start (UNIT *uptr, int32 val, char *c, void *desc);
 static t_stat ipc_stop  (UNIT *uptr, int32 val, char *c, void *desc);
-static t_stat Test (FILE *st, UNIT *uptr, int32 val, void *desc);
+static t_stat ipc_test (FILE *st, UNIT *uptr, int32 val, void *desc);
 static t_stat ipc_set_node  (UNIT *uptr, int32 val, char *c, void *desc);
 static t_stat ipc_show_node(FILE *st, UNIT *uptr, int32 val, void *desc);
 static t_stat ipc_set_grp  (UNIT *uptr, int32 val, char *c, void *desc);
@@ -65,76 +65,76 @@ static t_stat ipc_show_peers(FILE *st, UNIT *uptr, int32 val, void *desc);
 static t_stat ipc_remove_peers (UNIT *uptr, int32 val, char *c, void *desc);
 
 MTAB ipc_mod[] = {
-    { MTAB_XTD|MTAB_VDV|MTAB_NMO, 0,  "TEST", NULL, NULL, &Test },              // show IPC test
+    { MTAB_XTD|MTAB_VDV|MTAB_NMO, 0,  "TEST", NULL, NULL, &ipc_test },              // show IPC test
     {
         MTAB_XTD | MTAB_VDV | MTAB_VUN, /* mask */
-        0,            /* match */
-        (char *) "START",     /* print string */
-        (char *) "START",         /* match string */
-        ipc_start,         /* validation routine */
-        NULL,           /* display routine */
-        NULL,          /* value descriptor */
-        NULL /* help */
+        0,                              /* match */
+        (char *) "START",               /* print string */
+        (char *) "START",               /* match string */
+        ipc_start,                      /* validation routine */
+        NULL,                           /* display routine */
+        NULL,                           /* value descriptor */
+        NULL                            /* help */
     },
     {
         MTAB_XTD | MTAB_VDV | MTAB_VUN, /* mask */
-        0,            /* match */
-        (char *) "STOP",     /* print string */
-        (char *) "STOP",         /* match string */
-        ipc_stop,         /* validation routine */
-        NULL,           /* display routine */
-        NULL,          /* value descriptor */
-        NULL /* help */
+        0,                              /* match */
+        (char *) "STOP",                /* print string */
+        (char *) "STOP",                /* match string */
+        ipc_stop,                       /* validation routine */
+        NULL,                           /* display routine */
+        NULL,                           /* value descriptor */
+        NULL                            /* help */
     },
     {
         MTAB_XTD | MTAB_VDV | MTAB_VUN | MTAB_NC | MTAB_VALO | MTAB_QUOTE , /* mask */
-        0,            /* match */
-        (char *) "NODE",     /* print string */
-        (char *) "NODE",         /* match string */
-        ipc_set_node,         /* validation routine */
-        ipc_show_node, /* display routine */
-        NULL,          /* value descriptor */
-        NULL /* help */
+        0,                              /* match */
+        (char *) "NODE",                /* print string */
+        (char *) "NODE",                /* match string */
+        ipc_set_node,                   /* validation routine */
+        ipc_show_node,                  /* display routine */
+        NULL,                           /* value descriptor */
+        NULL                            /* help */
     },
     {
         MTAB_XTD | MTAB_VDV | MTAB_VUN | MTAB_NC | MTAB_VALR | MTAB_QUOTE , /* mask */
-        0,            /* match */
-        (char *) "GROUP",     /* print string */
-        (char *) "GROUP",         /* match string */
-        ipc_set_grp,         /* validation routine */
-        ipc_show_grp, /* display routine */
-        NULL,          /* value descriptor */
-        NULL /* help */
+        0,                              /* match */
+        (char *) "GROUP",               /* print string */
+        (char *) "GROUP",               /* match string */
+        ipc_set_grp,                    /* validation routine */
+        ipc_show_grp,                   /* display routine */
+        NULL,                           /* value descriptor */
+        NULL                            /* help */
     },
     {
         MTAB_XTD | MTAB_VDV | MTAB_VUN, /* mask */
-        0,            /* match */
-        (char *) "RESTART",     /* print string */
-        (char *) "RESTART",         /* match string */
-        ipc_restart,         /* validation routine */
-        NULL,               /* display routine */
-        NULL,          /* value descriptor */
-        NULL /* help */
+        0,                              /* match */
+        (char *) "RESTART",             /* print string */
+        (char *) "RESTART",             /* match string */
+        ipc_restart,                    /* validation routine */
+        NULL,                           /* display routine */
+        NULL,                           /* value descriptor */
+        NULL                            /* help */
     },
     {
-        MTAB_XTD | MTAB_VDV | MTAB_VUN  , /* mask */
-        0,            /* match */
-        (char *) "PEERS",     /* print string */
-        (char *) "PEERS",         /* match string */
-        NULL,         /* validation routine */
-        ipc_show_peers, /* display routine */
-        NULL,          /* value descriptor */
-        NULL /* help */
+        MTAB_XTD | MTAB_VDV | MTAB_VUN, /* mask */
+        0,                              /* match */
+        (char *) "PEERS",               /* print string */
+        (char *) "PEERS",               /* match string */
+        NULL,                           /* validation routine */
+        ipc_show_peers,                 /* display routine */
+        NULL,                           /* value descriptor */
+        NULL                            /* help */
     },
     {
-        MTAB_XTD | MTAB_VDV | MTAB_VUN  , /* mask */
-        0,            /* match */
-        (char *) "REMOVEPEERS",     /* print string */
+        MTAB_XTD | MTAB_VDV | MTAB_VUN, /* mask */
+        0,                              /* match */
+        (char *) "REMOVEPEERS",         /* print string */
         (char *) "REMOVEPEERS",         /* match string */
-        ipc_remove_peers,         /* validation routine */
-        NULL, /* display routine */
-        NULL,          /* value descriptor */
-        NULL /* help */
+        ipc_remove_peers,               /* validation routine */
+        NULL,                           /* display routine */
+        NULL,                           /* value descriptor */
+        NULL                            /* help */
     },
     { 0 }
 };
@@ -356,10 +356,11 @@ void killIPC()
     // Notify peers that this peer is shutting down. Provide
     // a brief interval to ensure message is emitted.
     if (node)
+    {
         zyre_stop(node);
-    zclock_sleep(100);
-    
-    zyre_destroy (&node);
+        zclock_sleep(100);
+        zyre_destroy (&node);
+    }
     
     actor = 0;
     node = 0;
@@ -384,7 +385,11 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
     {
         case ipcStart:
             if (actor)
-                killIPC();
+            {
+                sim_printf("Info: IPC already started.\n");
+                return SCPE_OK;
+            }
+            //    killIPC();
             
             actor = zactor_new (ipc_actor, arg1);
             assert (actor);
@@ -393,6 +398,12 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             break;
             
         case ipcStop:
+            if (!actor)
+            {
+                sim_printf("Info: IPC not started.\n");
+                return SCPE_OK;
+            }
+            
             ipc_printf("Stopping IPC ... ");
             killIPC();
             ipc_printf("deleted %d peers ... ", deletePeers());
@@ -400,9 +411,11 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             break;
             
         case ipcRestart:
-            ipc(ipcStop, 0, 0, 0, 0);           // kill IPC
+            if (actor)
+                ipc(ipcStop, 0, 0, 0, 0);           // kill IPC
             deletePeers();
-            ipc(ipcStart, fnpName, 0, 0, 0);    // start IPC
+            if (!actor)
+                ipc(ipcStart, fnpName, 0, 0, 0);    // start IPC
             break;
             
         case ipcEnter:
@@ -446,10 +459,20 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
         case ipcShoutRx:    // when we receive a broadcast message
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
             ipc_printf("(RX SHOUT)   %s/%s:<%s>\n", arg1, arg2, arg3);
+            
+            /*
+             * Insert code here to process any received broadcast message
+             * (arg1 = nodename, arg2 = ID, arg3 = message)
+             */
             break;
         case ipcWhisperRx:  // when we receive a peer-to-peer (whisper) message
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
             ipc_printf("(RX WHISPER) %s/%s:<%s>\n", arg1, arg2, arg3);
+            
+            /*
+             * Insert code here to process any received peer-to-peer message
+             * (arg1 = nodename, arg2 = ID, arg3 = message)
+             */
             break;
             
         case ipcTest:
@@ -467,13 +490,12 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
  */
 
 static
-t_stat Test (FILE *st, UNIT *uptr, int32 val, void *desc)
+t_stat ipc_test (FILE *st, UNIT *uptr, int32 val, void *desc)
 {
     sim_printf("Test: IPC not enabled.\n");
     
     return ipc(ipcTest, 0, 0, 0, 0);
 }
-
 static t_stat ipc_start(UNIT *uptr, int32 val, char *cval, void *desc)
 {
     return ipc(ipcStart, fnpName, 0, 0, 0);
@@ -612,16 +634,17 @@ t_stat ipc_whisper (int32 arg, char *buf)
     char *peer;
     char *msg;
     
-    if (a1 && a2)       // peer, message
+    if (a1 && a2)           // peer, message
     {
         peer = stripquotes(trim(a1));
         msg = stripquotes(trim(a2));
-    } else if (a1 && !a2)
+    } else if (a1 && !a2)   // message
     {
         peer = NULL;
         msg = stripquotes(trim(a1));
-    } else {
-        sim_printf("Usage: whisper peer, message\n");
+    } else
+    {
+        sim_printf("Usage: whisper [peer,] message\n");
         return SCPE_ARG;
     }
     
@@ -633,7 +656,7 @@ t_stat ipc_whisper (int32 arg, char *buf)
  */
 
 #define FREE(t)     \
-if (t) { free(t); t = 0; }
+    if (t) { free(t); t = 0; }
 
 // enter peer into list (if possible)
 IPC_Peer *savePeer(char *name, char *id)
@@ -659,7 +682,7 @@ IPC_Peer *findPeer(char *name)
 {
     IPC_Peer *s;
     
-    HASH_FIND_STR(Peers, name, s );
+    HASH_FIND_STR(Peers, name, s);
     return s;
 }
 
@@ -686,7 +709,7 @@ int deletePeers()
     
     HASH_ITER(hh, Peers, current, tmp)
     {
-        HASH_DEL(Peers, current);  /* delete it (users advances to next) */
+        HASH_DEL(Peers, current);  /* delete it (Peers advances to next) */
         FREE(current->peerID);
         FREE(current->peerName);
         FREE(current);            /* free it */
