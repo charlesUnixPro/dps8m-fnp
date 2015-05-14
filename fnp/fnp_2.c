@@ -449,14 +449,14 @@ FMTI * readDevInfo(FILE *src)
         
         if (strcmp(first, "name") == 0)
             current->multics.name = strdup(trim(second));
-        else if (strcmp(first, "regex") == 0)
+        else if (current && second && strcmp(first, "regex") == 0)
         {
             char *regx = stripquotes(second);
             int res = compile_regex(&current->multics.r, regx);
             if (!res)
                 current->multics.regex = strdup(regx);
         }
-        else
+        else if (current && second)
         {
             if (searchForAttribute(first, current->multics.attrs))
                 sim_printf("Warning: Ignoring duplicate attribute <%s> at line %d\n", first, nLines);

@@ -58,6 +58,8 @@ stripquotes(char *s)
  */
 char *rtrim(char *s)
 {
+    if (! s)
+      return s;
     int index;
     
     //for (index = (int)strlen(s) - 1; index >= 0 && (s[index] == ' ' || s[index] == '\t'); index--)
@@ -73,6 +75,8 @@ char *ltrim(char *s)
  *	Removes the leading spaces from a string.
  */
 {
+    if (! s)
+      return s;
     char *p;
     if (s == NULL)
         return NULL;
