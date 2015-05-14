@@ -1,63 +1,48 @@
-#
-# faux Multics/FNP device information table (FMDI)
-#
+Service: login;
+Charge: none;
+Terminal_type: none;
+Line_type: none;
+Baud: 9600;
+FNP_required_up_time: 5;
+FNP:      D;
+   type:            DN6670;
+   memory:          64;
+   lsla:            0;
+   hsla:            1;
+   image:           >system_library_unbundled>site_mcs;
+   service:         active;
+name: d.h000;
+name: d.h001;
+name: d.h002;
+name: d.h003;
+name: d.h004;
+name: d.h005;
+name: d.h006;
+name: d.h007;
+name: d.h008;
+name: d.h009;
+name: d.h010;
+name: d.h011;
+name: d.h012;
+name: d.h013;
+name: d.h014;
+name: d.h015;
+name: d.h016;
+name: d.h017;
+name: d.h018;
+name: d.h019;
+name: d.h020;
+name: d.h021;
+name: d.h022;
+name: d.h023;
+name: d.h024;
+name: d.h025;
+name: d.h026;
+name: d.h027;
+name: d.h028;
+name: d.h029;
+name: d.h030;
+name: d.h031;
+name: d.h032;
+end;
 
-#On Tue, Dec 9, 2014 at 1:58 PM, Harry Reed <doon386@cox.net> wrote:
-#
-#>> Yup, makes sense. I assume that the line/device database is downloaded into the FNP? and in the format you game?
-#
-#
-#> No such luck. The database is a collection of macros, and is cross-compiled into the firmware, which is pushed into the FNP at multi-user startup time.
-#> The cross-compiler is currently not working under Multics, so we are temporarily constrained to that particular configuration. The configuration data
-#> is well defined, and it should be possible to extract it from the download, but I don't view that as critical path; all we need
-#> to get working is emulation of hardwired terminals.
-#
-#> -- C
-
-name:               d.h002;
-baud:               auto;
-comment:            "cable 12319, X-6400, Vadic VA3467.";
-
-name:               d.h006;
-baud:               9600;
-comment:            "Define  60ma current loop.";
-terminal_type:      VIP7801;
-attributes:         "hardwired, dont_read_answerback";
-initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
-
-name:               d.h012;
-baud:               2400;
-comment:            "hardwired to service system channels c.h212.";
-terminal_type:      VIP7801;
-attributes:         "hardwired, dont_read_answerback";
-initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
-
-name:               d.h013;
-baud:               2400;
-comment:            "hardwired to service system channels c.h213.";
-terminal_type:      VIP7801;
-attributes:         "hardwired, dont_read_answerback";
-initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
-
-
-name:               d.h014;
-baud:               9600;
-comment:            "cable 72012, Rm 254, hardwired VIP7801, PMDC";
-terminal_type:      VIP7801;
-attributes:         "hardwired, dont_read_answerback";
-initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
-
-name:               d.h015;
-baud:               9600;
-comment:            "cable 71688, Rm 254, hardwired VIP7802, PMDC.";
-terminal_type:      VIP7801;
-attributes:         "hardwired, dont_read_answerback";
-initial_command:    "modes echoplex,^tabs,tabecho,crecho,lfecho";
-
-name:               d.h022;
-baud:               1200;
-comment:            "cable 57070, TYMNET, port 60.";
-
-name:               d.h023;
-baud:               1200;
-comment:            "cable 57073, TYMNET, prot 61.";
