@@ -1,0 +1,38 @@
+Commands sent from dps8m to fFNP:
+
+    tellFFNP (int fnp_no, char * command);
+
+        fnp_no: Later, when we have multiple FNPs, this will mean something.
+
+        command:
+
+            "bootload" 
+                This command indicates that Multics has indicated that
+                FNP should restart, reload it's configuration tables,
+                and reset it's state data.
+
+            "accept_calls %d"
+                '%d' is 0 (don't accept) or 1 (accept)/
+                Sets the state of the FNP to accepting or not accepting
+                incoming calls. Reset state is off.
+
+            "listen %d %d %d"
+                First parameter is 0 (disable) or 1 (enable).
+                Second parameter is line number (0 - 31) of a HSLA line.
+                Third parameter is input buffer size.
+                Enable or disable listening for incoming calls on the indicated
+                HSLA line.
+
+Commands sent from fFNP to DPS8m:
+
+    tellDPS8 (char * command)
+
+        command:
+
+            "offhook %d"
+               The line %d has been answered; ie. a telnet connection
+               to the fFNP has been established.
+
+            "hangup %d:
+                The line %d has been disconnected.
+
