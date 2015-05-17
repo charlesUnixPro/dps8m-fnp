@@ -200,6 +200,8 @@ t_stat sim_instr (void)
         sim_interval = sim_interval - 1;                    /* count down */
         
         n += 1;
+        
+        usleep (100000); // 1/10 sec.
     }
     
     // if IPC was running before G leave it running - don't stop it, else stop it if it was started in sim_instr()
