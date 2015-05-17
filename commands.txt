@@ -11,10 +11,13 @@ Commands sent from dps8m to fFNP:
                 FNP should restart, reload it's configuration tables,
                 and reset it's state data.
 
-            "accept_calls %d"
-                '%d' is 0 (don't accept) or 1 (accept)/
-                Sets the state of the FNP to accepting or not accepting
-                incoming calls. Reset state is off.
+            "accept_calls"
+                Sets the state of the FNP to accepting
+                incoming calls. Reset state is not accepting.
+
+            "dont_accept_calls"
+                Sets the state of the FNP to not accepting
+                incoming calls. Reset state is not accepting.
 
             "listen %d %d %d"
                 First parameter is 0 (disable) or 1 (enable).
