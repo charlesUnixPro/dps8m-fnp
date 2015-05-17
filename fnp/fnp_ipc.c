@@ -10,6 +10,7 @@
 #include "fnp_defs.h"
 #include "fnp_utils.h"
 #include "fnp_mux.h"
+#include "fnp_cmds.h"
 #endif
 #ifdef VM_DPS8
 #include "sim_defs.h"
@@ -473,6 +474,12 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
              * Insert code here to process any received peer-to-peer message
              * (arg1 = nodename, arg2 = ID, arg3 = message)
              */
+            
+            if (fnp_command(arg1, arg2, arg3) != SCPE_OK)
+            {
+                // TODO: process possible error
+            }
+            
             break;
             
         case ipcTest:
