@@ -201,7 +201,8 @@ t_stat sim_instr (void)
         
         n += 1;
         
-        usleep (100000); // 1/10 sec.
+        // at least under OS/X usleep() call breaks the FNP. (Will no longer connect via telnet) Investigating.
+        //usleep (100000); // 1/10 sec.
     }
     
     // if IPC was running before G leave it running - don't stop it, else stop it if it was started in sim_instr()
