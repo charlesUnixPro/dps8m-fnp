@@ -23,6 +23,7 @@
 enum muxtermstate
 {
     eDisconnected = 0,  // disconnected
+    eUnassigned,        // not yet assigned a Multics device
     eInput,             // waiting for user input
     ePassThrough,       // passthought mode
     eEndOfLine,         // EOL detected during user input (\r or \n)
@@ -43,6 +44,7 @@ struct fauxMulticsTerminalInfo
     struct
     {
         char    *name;     // Multics device name
+        int     hsla_line_num; // Multiplexor slot number associated with name
         regex_t r;         // optional regex to match name
         char    *regex;    // text of optional regex
         

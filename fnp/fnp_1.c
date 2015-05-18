@@ -14,6 +14,7 @@
 #include "fnp_1.h"
 #include "fnp_2.h"
 #include "fnp_utils.h"
+#include "fnp_cmds.h"
 
 extern MUXTERMIO ttys[MAX_LINES];
 extern TMLN mux_ldsc[MAX_LINES];
@@ -24,14 +25,19 @@ getDevList();
 /*
  * called when a MUX line in connected to a telnet client ...
  */
-t_stat OnMuxConnect(TMLN *tmnl, int line)
+t_stat OnMuxConnect(TMLN *tmln, int line)
 {
     sim_printf("%s CONNECT %d\n", Now(), line);
     
-    tmxr_linemsgf (tmnl, "HSLA Port (%s)? ", getDevList());
-    
+    if (MS_accept_calls)
+    {
+        tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
+        ttys[line].state = eInput;      // waiting for user input
+    } else {
+        tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
+        ttys[line].state = eUnassigned;      // waiting for user input
+    }
     ttys[line].mux_line = line;
-    ttys[line].state = eInput;      // waiting for user input
     
     return SCPE_OK;
 }
@@ -100,6 +106,15 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
     switch (tty->state)
     {
         case eDisconnected:
+            break;
+        case eUnassigned:
+            if (MS_accept_calls)
+            {
+                tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
+                ttys[line].state = eInput;      // waiting for user input
+            } else {
+                tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
+            }
             break;
         case eInput:
             switch (processUserInput(mp, tmln, tty, line, kar))

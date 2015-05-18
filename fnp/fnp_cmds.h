@@ -14,6 +14,11 @@
 #include "fnp_defs.h"
 #include "fnp_ipc.h"
 
+// MS: Multics state: the state that Multics has set the FNP to
+
+extern bool MS_accept_calls;
+extern bool MS_listen [MAX_LINES];
+extern int MS_input_buffer_size [MAX_LINES];
 t_stat fnp_command(char *nodename, char *id, char *arg3);
 
 

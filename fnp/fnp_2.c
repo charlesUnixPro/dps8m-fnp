@@ -8,6 +8,7 @@
 #include "fnp_defs.h"
 #include "fnp_2.h"
 #include "fnp_utils.h"
+#include "fnp_cmds.h"
 
 FMTI *fmti = NULL;
 
@@ -19,7 +20,7 @@ On Tue, Dec 9, 2014 at 1:58 PM, Harry Reed <doon386@cox.net> wrote:
 
 > No such luck. The database is a collection of macros, and is cross-compiled into the firmware, which is pushed into the FNP at multi-user startup time.
 > The cross-compiler is currently not working under Multics, so we are temporarily constrained to that particular configuration. The configuration data
-> is well defined, and it should be possible to extract it from the download, but I don't view that as critical path; all we need
+> is well defined, and it should be possible to extract it from the download, but I do not view that as critical path; all we need
 > to get working is emulation of hardwired terminals.
 
 > -- C
@@ -270,7 +271,9 @@ getDevList()
     FMTI *t = fmti;
     while (t)
     {
-        if (t->inUse == false)
+        if (t->inUse == false &&
+            t->multics.hsla_line_num != -1 &&
+            MS_listen [t->multics.hsla_line_num])
         {
             if (strlen(buf) > 0)
                 strcat(buf, ",");
@@ -448,7 +451,20 @@ FMTI * readDevInfo(FILE *src)
         //sim_printf("%s %s\n", first, second);
         
         if (strcmp(first, "name") == 0)
+        {
             current->multics.name = strdup(trim(second));
+            // line # is encoded in the name. "d.h005" is line 5
+            // assuming last 3 chars are a number....
+            size_t len = strlen (current->multics.name);
+            current->multics.hsla_line_num = -1;
+            if (len >= 3)
+            {
+                int lineno = atoi (current->multics.name + len - 3);
+                if (lineno >= 0 && lineno < MAX_LINES)  
+                    current->multics.hsla_line_num = lineno;
+            }
+        //ipc_printf ("%s %d\n", current->multics.name, current->multics.hsla_line_num);
+        }
         else if (current && second && strcmp(first, "regex") == 0)
         {
             char *regx = stripquotes(second);
