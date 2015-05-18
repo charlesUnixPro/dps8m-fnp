@@ -49,7 +49,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         MS_accept_calls = true;
     } else if (strcmp(arg3, "dont_accept_calls") == 0)
     {
-        ipc_printf("Received DONT_ACCEPt_CALLS command...\n");
+        ipc_printf("Received DONT_ACCEPT_CALLS command...\n");
         MS_accept_calls = false;
     } else if (strncmp(arg3, "listen", 6) == 0)
     {

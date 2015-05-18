@@ -117,6 +117,14 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
             }
             break;
         case eInput:
+            if (! MS_accept_calls) // Accept calls got dropped between
+                                   // eUnassigned and eInput
+            {
+                tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
+                ttys[line].state = eUnassigned;
+                break;
+            }
+
             switch (processUserInput(mp, tmln, tty, line, kar))
             {
                 case eEndOfLine:
