@@ -72,6 +72,9 @@ static void fnp_init(void)
     // These are part of the simh interface
     
     sim_vm_cmd = fnp_cmds;
+    // sim_timer_init hasn't been called yet, so this doesn't work
+    //t_stat stat = sim_set_idle (NULL, 0, "1", NULL); 
+    //ipc_printf ("sim_set_idle returned %d\n", stat);
 }
 void (*sim_vm_init) (void) = &fnp_init;    //CustomCmds;
 
@@ -132,6 +135,10 @@ t_stat sim_instr (void)
     /* Main instruction fetch/decode loop: check clock queue, intr, trap, bkpt */
     int reason = 0;
     int32 n = 0;
+
+    t_stat stat = sim_set_idle (NULL, 0, "10", NULL); 
+    if (stat)
+        ipc_printf ("sim_set_idle returned %d\n", stat);
 
     clk(STCLK, 0, 0);        // start clock
     mux(SLS, 0, 0);
@@ -203,6 +210,13 @@ t_stat sim_instr (void)
         
         // at least under OS/X usleep() call breaks the FNP. (Will no longer connect via telnet) Investigating.
         //usleep (100000); // 1/10 sec.
+        //usleep (1); // 1 usec???
+        //static struct timespec ts = {0, 1};
+        //nanosleep (& ts, NULL);
+//if (sim_interval % 256 == 0) {
+        t_bool flg = sim_idle (/* clk # */ 0, /* decr interval */ false);
+        //if (flg) ipc_printf ("sim_idle returned %s\n", flg ? "true" : "false");
+//}
     }
     
     // if IPC was running before G leave it running - don't stop it, else stop it if it was started in sim_instr()

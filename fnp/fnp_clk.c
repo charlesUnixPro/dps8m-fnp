@@ -38,7 +38,7 @@ t_stat clk_show_freq (FILE *st, UNIT *uptr, int32 val, void *desc);
 
 DIB clk_dib = { MUX_INT_CLK, MUX_INT_CLK, PI_CLK, &clk };
 
-UNIT clk_unit = { UDATA (&clk_svc, 0, 0) };
+UNIT clk_unit = { UDATA (&clk_svc, UNIT_IDLE, 0) };
 
 REG clk_reg[] = {
     { ORDATA (SELECT, clk_sel, 2) },
