@@ -26,16 +26,39 @@ Commands sent from dps8m to fFNP:
                 Enable or disable listening for incoming calls on the indicated
                 HSLA line.
 
+            "accept_output %d <encoded_data>"
+            "accept_last_output %d <encoded_data>"
+
 Commands sent from fFNP to DPS8m:
 
     tellDPS8 (char * command)
 
         command:
 
-            "offhook %d"
-               The line %d has been answered; ie. a telnet connection
-               to the fFNP has been established.
+            "accept_new_terminal %d %d %d"
+                Dialup has been received on a channel.
+                First parameter is line number (0-31) of a HSLA line.
+                Second parameter is the line type of the channel.
+                    1 is ASCII.
+                    (-1 is TELNET; interesting...)
+                    See line_types.incl.pl1
+                Third parameter is baud_rate of an autobaud channel,
+                or 0. (This affect buffer sizes on the Multics side.)
 
-            "hangup %d:
-                The line %d has been disconnected.
+                    dcl  baud_table (15) fixed bin int static options (constant) init
+                         (110, 133, 150, 300, 600, 1200, 1800, 2400, 4800, 7200,
+                          9600, 19200, 40800, 50000, 72000);
 
+            "line_disconnected %d"
+                First parameter is line number (0-31) of a HSLA line.
+               
+
+
+
+Normal command flow
+
+   bootload      -->
+   accept_calls  -->
+   listen ...    -->
+                 <-- accept_new_terminal ...
+   wtx ...       -->
