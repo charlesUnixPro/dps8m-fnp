@@ -76,6 +76,7 @@ bool isIPCEnabled();
 
 t_stat ipc_shout   (int32 arg, char *buf);
 t_stat ipc_whisper (int32 arg, char *buf);
+void tellCPU (int cpuUnitNum, char * msg);
 
 
 #ifdef VM_FNP

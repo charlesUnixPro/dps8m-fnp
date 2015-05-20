@@ -492,6 +492,27 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
     return SCPE_OK;
 }
 
+void tellCPU (int cpuUnitNum, char * msg)
+  {
+    ipc_printf ("tellCPU (%s)\n", msg);
+
+#define RETRIES 2048
+    int retry;
+    for (retry = 0; retry < RETRIES; retry ++)
+      {
+        if (findPeer ("cpu-a"))
+          break;
+        usleep (1000);
+      }
+    if (retry >= RETRIES)
+      ipc_printf ("CPU not found....\n");
+
+    t_stat stat = ipc (ipcWhisperTx, "cpu-a", msg, NULL, 0);
+    if (stat != SCPE_OK)
+      ipc_printf ("tellCPU returned %d\n", stat);
+    return;
+  }
+
 /*
  * set IPC commands
  */

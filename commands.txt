@@ -20,15 +20,138 @@ Commands sent from dps8m to fFNP:
                 incoming calls. Reset state is not accepting.
 
             "listen %d %d %d"
-                First parameter is 0 (disable) or 1 (enable).
-                Second parameter is line number (0 - 31) of a HSLA line.
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
                 Third parameter is input buffer size.
                 Enable or disable listening for incoming calls on the indicated
                 HSLA line.
 
+            "change_control_string %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is control string index.
+                "Change index of strings used for keyboard and printer 
+                 addressing"
+               
+                From control_tables.map355:
+
+                    devtbl    zero      d.asci    table for ascii devices
+                              zero      d.1050    table for 1050's
+                              zero      d.2741    table for 2741's
+                              zero      d.ards    table for the ards
+                              zero      d.sync    table for sync devices
+                              zero      d.sync    table for g115's
+                              zero      d.sync    table for bsc
+                              zero      d.t202    table for t202
+                              zero      d.vip     table for vip
+                              zero      d.asci    table for async1
+                              zero      d.asci    table for async2
+                              zero      d.asci    table for async3
+                              zero      d.sync    table for sync1
+                              zero      d.sync    table for sync2
+                              zero      d.sync    table for sync3
+                              zero      d.sync    table for polled vip
+                              zero      d.sync    table for X.25 LAP
+
+                    d.asci    devtbl    (0,0),0,k.asci,p.asci,0,
+                              etc       (nl,cr,tab,bs,nochar,nochar),(blt.t,ff,nl,etx)
+\                   From AN85-01, pg 12-3,4
+                        (0,0) sync. seq. chars.; ignored for async.
+                        k.asci   address of string for addressing keyboard
+                        p.asci   address of string for addressing printer
+                        0        flags
+                                   bit 17: 0 - keyboard and printer addressing
+                                               not required.
+                                       16: 0 - default setting of sffsct
+                                       15: 0 - no case shift characters
+                        nl      newline char. is nl
+                        cr      carriage return char. is cr
+                        tab     tab char. is tab
+                        bs      backspace char. is bs
+                        nochar  no upshift char.
+                        nochar  no downshift char.
+                        (blt.t,ff,nl,etx)
+                                break list; ignored for HSLA.
+
             "accept_output %d <encoded_data>"
             "accept_last_output %d <encoded_data>"
 
+            "dump_input %d"
+                Parameter is line number (0 - 31) of a HSLA line.
+                Discard and pending input from line.
+
+            "terminal_accepted %d"
+                Parameter is line number (0 - 31) of a HSLA line.
+
+            "break_all %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "handle_quit %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "full_duplex %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "echoplex %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "crecho %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "lfecho %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "tabecho %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "replay %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "polite %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "prefixnl %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "eight_bit_out %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "eight_bit_in %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "odd_parity %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "output_flow_control %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "input_flow_control %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is 0 (disable) or 1 (enable).
+
+            "block_xfer %d %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second parameter is in-frame buffer size
+                Third parameter is out-of-frame buffer size
+
+            "set_delay_table %d %d %d %d %d %d %d"
+                First parameter is line number (0 - 31) of a HSLA line.
+                Second through seventh parameters are the six
+                delay values.
+ 
 Commands sent from fFNP to DPS8m:
 
     tellDPS8 (char * command)
@@ -53,12 +176,33 @@ Commands sent from fFNP to DPS8m:
                 First parameter is line number (0-31) of a HSLA line.
                
 
+            "wru_timeout %d"
+                Line %d has timed out waiting for WRU reply.
 
 
 Normal command flow
 
-   bootload      -->
-   accept_calls  -->
-   listen ...    -->
-                 <-- accept_new_terminal ...
-   wtx ...       -->
+   bootload              -->
+   accept_calls          -->
+   listen ...            -->
+                         <-- accept_new_terminal ...
+   terminal_accepted ... -->
+   dump_input ...        -->
+   wru ...               -->
+                         <-- wru_timeout
+   break_all ...         -->
+   handle_quit ...       -->
+   full_duplex ...       -->
+   echoplex ...          -->
+   crecho ...            -->
+   lfecho ...            -->
+   tabecho ...           -->
+   replay ...            -->
+   polite ...            -->
+   prefixnl ...          -->
+   eight_bit_out ...     -->
+   eight_bit_in ...      -->
+   odd_parity ...        -->
+   output_flow_control   -->
+   input_flow_control    -->
+   block_xfer            -->

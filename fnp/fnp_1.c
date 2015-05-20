@@ -133,11 +133,15 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
                     {
                         tty->fmti = q;              // associate line with Multics device
                         q->inUse = true;            // device is being used
+                        // XXX the accept_terminal command should set this
                         tty->state = ePassThrough;  // device attached to tty line. Go into passthrough mode
                         
                         tmxr_linemsgf (tmln, "%s", strFMTI(q, line));
                         
                         sim_printf("%s LINE %d CONNECTED AS %s\n", Now(), line, q->multics.name);
+                        char buf [256];
+                        sprintf (buf, "accept_new_terminal %d 1 0", q->multics.hsla_line_num);
+                        tellCPU (0, buf);
                     }
                     else
                     {
