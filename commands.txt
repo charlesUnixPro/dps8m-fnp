@@ -152,6 +152,11 @@ Commands sent from dps8m to fFNP:
                 Second through seventh parameters are the six
                 delay values.
  
+            "output %d %d %s"
+                First parameter is line number (0-31) of a HSLA line.
+                Second parameter is the number of output chars. avail.
+                Third parameter is encoded output data.
+
 Commands sent from fFNP to DPS8m:
 
     tellDPS8 (char * command)
@@ -172,13 +177,44 @@ Commands sent from fFNP to DPS8m:
                          (110, 133, 150, 300, 600, 1200, 1800, 2400, 4800, 7200,
                           9600, 19200, 40800, 50000, 72000);
 
+            "accept_output %d"
+                Parameter is line number (0-31) of a HSLA line.
+                Line is ready for output.
+
             "line_disconnected %d"
-                First parameter is line number (0-31) of a HSLA line.
+                Parameter is line number (0-31) of a HSLA line.
                
 
             "wru_timeout %d"
                 Line %d has timed out waiting for WRU reply.
 
+
+            "input %d %d %d %d %s"
+                First parameter is line number (0-31) of a HSLA line.
+                Second parameter is the number of input chars. avail.
+                Third parameter is 1 is an output chain is present in the FNP.
+                Fourth parameter is 1 if the input contains a break character.
+                Fifth parameter is encoded input data.
+
+               This a generalization of the input_in_mailbox and 
+               accept_direct_input commands; the command will be
+               realized in DIA code based on the number of characters 
+               available.
+
+Encoded data stream: 
+
+     Each data byte is 2 hex characters.
+     "data:<len>:<data>"
+
+     "abc" ==>   "data:3:616263"
+
+#            "accept_input %d %d %d %d %d"
+#                Input is available.
+#                First parameter is line number (0-31) of a HSLA line.
+#                Second parameter is the number of input chars. avail.
+#                Third parameter is the number of 32 word blocks available in the FNP.
+#                Fourth parameter is 1 is an output chain is present in the FNP.
+#                Fifth parameter is 1 if the input contains a break character.
 
 Normal command flow
 
@@ -187,6 +223,7 @@ Normal command flow
    listen ...            -->
                          <-- accept_new_terminal ...
    terminal_accepted ... -->
+                         <-- accept_output
    dump_input ...        -->
    wru ...               -->
                          <-- wru_timeout
@@ -206,3 +243,4 @@ Normal command flow
    output_flow_control   -->
    input_flow_control    -->
    block_xfer            -->
+                         <-- input ...

@@ -198,6 +198,34 @@ extern int32 mux_tmxr_poll;                                /* tmxr poll */
 extern int32 mux_int_req, mux_busy, mux_done, mux_disable;
 extern int32 mux_chars_Rx;   //saved_PC;
 
-
+typedef struct
+  {
+    t_bool accept_calls;
+    struct
+      {
+        int muxLineNum;
+        t_bool listen;
+        int inputBufferSize;
+        int ctrlStrIdx;
+        t_bool breakAll;
+        t_bool handleQuit;
+        t_bool fullDuplex;
+        t_bool echoPlex;
+        t_bool crecho;
+        t_bool lfecho;
+        t_bool tabecho;
+        t_bool replay;
+        t_bool polite;
+        t_bool prefixnl;
+        t_bool eight_bit_out;
+        t_bool eight_bit_in;
+        t_bool odd_parity;
+        t_bool output_flow_control;
+        t_bool input_flow_control;
+        int block_xfer_in_frame, block_xfer_out_of_frame;
+        int delay_table [6];
+      } line [MAX_LINES];
+  } t_MState;
+extern t_MState MState;
 
 #endif

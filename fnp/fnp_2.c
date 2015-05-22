@@ -273,7 +273,7 @@ getDevList()
     {
         if (t->inUse == false &&
             t->multics.hsla_line_num != -1 &&
-            MS_listen [t->multics.hsla_line_num])
+            MState . line [t->multics.hsla_line_num] . listen)
         {
             if (strlen(buf) > 0)
                 strcat(buf, ",");
@@ -503,3 +503,14 @@ FMTI *readAndPrint(char *file)
     
     return p;
 }
+
+    
+void processInputCharacter (int line, int kar)
+  {
+    ttys [line] . buffer [ttys [line] . nPos ++] = kar;
+    int hsla_line_num = ttys [line] . fmti -> multics . hsla_line_num;
+    sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos);
+    ttys [line] . nPos = 0;
+  }
+
+

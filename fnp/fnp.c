@@ -125,7 +125,6 @@ t_stat parse_sym (char *cptr, t_addr addr, UNIT *uptr, t_value *val, int32 sw)
     return SCPE_OK;
 }
 
-extern MUXTERMIO ttys[MAX_LINES];
 extern TMLN mux_ldsc[MAX_LINES];
 void MUXDisconnectAll();
 

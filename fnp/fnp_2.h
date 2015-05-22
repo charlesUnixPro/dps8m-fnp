@@ -63,7 +63,7 @@ struct muxtermio
     FMTI        *fmti;          // multics device attached to this line
     int32       mux_line;       // multiplexor line# used for this terminal (-1 == unused)
     TMLN        *tmln;          // terminal line
-    char        buffer[1024];   // line buffer for initial device selection
+    char        buffer[1024];   // line buffer for initial device selection and line discipline
     int32       nPos;           // position where *next* user input is to be stored
     MUXTERMSTATE state;         // state of tty (eDisconnected, eInput ePassThrough)
 };
@@ -74,5 +74,8 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
 
 #define PROMPT  "HSLA Port (%s)? "
 
+extern MUXTERMIO ttys[MAX_LINES];
+
+void processInputCharacter (int line, int kar);
 
 #endif /* defined(__fnp__fnp_2__) */

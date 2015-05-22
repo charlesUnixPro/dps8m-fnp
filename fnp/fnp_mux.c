@@ -268,8 +268,6 @@ MTAB mux_mod[] =
     { 0 }
 } ;
 
-extern MUXTERMIO ttys[MAX_LINES];
-
 REG *sim_PC = &mux_reg[0];
 
 t_stat mux_attach(UNIT *unitp, char *cptr)

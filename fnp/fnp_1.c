@@ -16,7 +16,6 @@
 #include "fnp_utils.h"
 #include "fnp_cmds.h"
 
-extern MUXTERMIO ttys[MAX_LINES];
 extern TMLN mux_ldsc[MAX_LINES];
 
 char *
@@ -29,7 +28,7 @@ t_stat OnMuxConnect(TMLN *tmln, int line)
 {
     sim_printf("%s CONNECT %d\n", Now(), line);
     
-    if (MS_accept_calls)
+    if (MState . accept_calls)
     {
         tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
         ttys[line].state = eInput;      // waiting for user input
@@ -108,7 +107,7 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
         case eDisconnected:
             break;
         case eUnassigned:
-            if (MS_accept_calls)
+            if (MState . accept_calls)
             {
                 tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
                 ttys[line].state = eInput;      // waiting for user input
@@ -117,7 +116,7 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
             }
             break;
         case eInput:
-            if (! MS_accept_calls) // Accept calls got dropped between
+            if (! MState . accept_calls) // Accept calls got dropped between
                                    // eUnassigned and eInput
             {
                 tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
@@ -133,6 +132,7 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
                     {
                         tty->fmti = q;              // associate line with Multics device
                         q->inUse = true;            // device is being used
+                        MState . line [q->multics.hsla_line_num] . muxLineNum = line;
                         // XXX the accept_terminal command should set this
                         tty->state = ePassThrough;  // device attached to tty line. Go into passthrough mode
                         
@@ -161,7 +161,8 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
             }
             break;
         case ePassThrough:
-            MuxWrite(line, kar);
+            //MuxWrite(line, kar);
+            processInputCharacter (line, kar);
             break;
         default:
             break;
