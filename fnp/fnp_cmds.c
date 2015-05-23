@@ -504,7 +504,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
     } else if (strncmp(arg3, "block_xfer", 10) == 0)
     {
         int p1, p2, p3;
-        int n = sscanf(arg3, "%*s %d %d", &p1, &p2, &p3);
+        int n = sscanf(arg3, "%*s %d %d %d", &p1, &p2, &p3);
         if (n != 3)
             return SCPE_ARG;
         ipc_printf("received block_xfer %d %d %d ...\n", p1, p2, p3);
