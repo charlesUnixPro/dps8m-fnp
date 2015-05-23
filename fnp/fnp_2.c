@@ -573,8 +573,32 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
             tty->buffer[tty->nPos] = 0;
             return;
             
+        case '\b':  // backspace
+        case 127:   // delete
+            if (MState . line [hsla_line_num].erkl)
+            {
+                if (tty->nPos > 0)
+                {
+                    tmxr_linemsg(tmln, "\b \b");    // remove char from line
+                    tty->buffer[tty->nPos] = 0;     // remove char from buffer
+                    tty->nPos -= 1;                 // back up buffer pointer
+                } else
+                    tmxr_linemsg(tmln, "\a");
+            }
+            break;
+            
+        case 21:    // ^U kill
+            if (MState . line [hsla_line_num].erkl)
+            {
+                tty->nPos = 0;
+                tty->buffer[tty->nPos] = 0;
+                tmxr_linemsg(tmln, "^U");
+                
+                return;
+            }
+     
 //                return eEndOfLine;              // EOL found
-//                
+//
 //            case 0x12:  // ^R
 //                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
 //                //tmxr_linemsgf (tmln, PROMPT, getDevList());
@@ -595,23 +619,32 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
     } else {
         switch (kar)
         {
-            case '\b':  // backspace
-            case 127:   // delete
-                if (tty->nPos > 0)
-                {
-                    tmxr_linemsg(tmln, "\b \b");    // remove char from line
-                    tty->buffer[tty->nPos] = 0;     // remove char from buffer
-                    tty->nPos -= 1;                 // back up buffer pointer
-                } else
-                    tmxr_linemsg(tmln, "\a");
-                
-                break;
-                
-            case '\n':
-            case '\r':
-                tty->buffer[tty->nPos] = 0;
-                return;
-                
+//            case '\b':  // backspace
+//            case 127:   // delete
+//                if (MState . line [hsla_line_num].erkl)
+//                {
+//                    if (tty->nPos > 0)
+//                    {
+//                        tmxr_linemsg(tmln, "\b \b");    // remove char from line
+//                        tty->buffer[tty->nPos] = 0;     // remove char from buffer
+//                        tty->nPos -= 1;                 // back up buffer pointer
+//                    } else
+//                        tmxr_linemsg(tmln, "\a");
+//                }
+//                break;
+//                
+//            case '\n':
+//            case '\r':
+//                tty->buffer[tty->nPos] = 0;
+//                return;
+//               
+//            case 21:    // ^U kill
+//                if (MState . line [hsla_line_num].erkl)
+//                {
+//                    tty->nPos = 0;
+//                    tty->buffer[0] = 0;
+//                    tmxr_linemsg(tmln, "^U");
+//                }
 //            case 0x12:  // ^R
 //                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
 //                tmxr_linemsgf (tmln, PROMPT, getDevList());
