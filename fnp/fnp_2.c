@@ -504,13 +504,115 @@ FMTI *readAndPrint(char *file)
     return p;
 }
 
+
+//void processInputCharacter (int line, int kar)
+void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar)
+{
+    int hsla_line_num = tty->fmti->multics.hsla_line_num;
+
+
+    // echo \r, \n & \t
+    if (MState . line [hsla_line_num] .crecho && kar == '\r')
+        MuxWrite(line, kar);
+    else if (MState . line [hsla_line_num] .lfecho && kar == '\n')
+        MuxWrite(line, kar);
+    else if (MState . line [hsla_line_num] .tabecho && kar == '\t') // may have to translate tabs to spaces ... later
+        MuxWrite(line, kar);
     
-void processInputCharacter (int line, int kar)
-  {
-    ttys [line] . buffer [ttys [line] . nPos ++] = kar;
-    int hsla_line_num = ttys [line] . fmti -> multics . hsla_line_num;
-    sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos);
-    ttys [line] . nPos = 0;
+    
+    // send of each and every character
+    if (MState . line [hsla_line_num] .breakAll)
+    {
+        ttys [line] . buffer [ttys [line] . nPos ++] = kar;
+        int hsla_line_num = ttys [line] . fmti -> multics . hsla_line_num;
+        sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, true);
+        ttys [line] . nPos = 0;
+        
+        return;
+    }
+    
+    // nothing after here tested (yet)
+    
+    // buffer too full for anything more or we reach our buffer threshold?
+    int inputBufferSize =  MState . line [hsla_line_num].inputBufferSize;
+    
+    if (tty->nPos >= sizeof(tty->buffer) || tty->nPos >= inputBufferSize)
+    {
+        sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, false);
+        tty->nPos = 0;
+        tty->buffer[tty->nPos] = 0;
+        return;
+        
+        // yes. Only allow \n, \r, ^H, ^R
+//        switch (kar)
+//        {
+//            case '\b':  // backspace
+//            case 127:   // delete
+//                tmxr_linemsg(tmln, "\b \b");    // remove char from line
+//                tty->buffer[tty->nPos] = 0;     // remove char from buffer
+//                tty->nPos -= 1;                 // back up buffer pointer
+//                break;
+//                
+//            case '\n':
+//            case '\r':
+//                tty->buffer[tty->nPos] = 0;
+//                return eEndOfLine;              // EOL found
+//                
+//            case 0x12:  // ^R
+//                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
+//                //tmxr_linemsgf (tmln, PROMPT, getDevList());
+//                tmxr_linemsg  (tmln, tty->buffer);
+//                break;
+//                
+//            default:
+//                break;
+//        }
+        return;  // stay in input mode
+    }
+    
+    if (isprint(kar))   // printable?
+    {
+        // if half duplex, echo back to MUX line
+        if (!(MState . line [hsla_line_num] .fullDuplex))
+            MuxWrite(line, kar);
+    
+        tty->buffer[tty->nPos++] = kar;
+    } else {
+        switch (kar)
+        {
+            case '\b':  // backspace
+            case 127:   // delete
+                if (tty->nPos > 0)
+                {
+                    tmxr_linemsg(tmln, "\b \b");    // remove char from line
+                    tty->buffer[tty->nPos] = 0;     // remove char from buffer
+                    tty->nPos -= 1;                 // back up buffer pointer
+                } else
+                    tmxr_linemsg(tmln, "\a");
+                
+                break;
+                
+            case '\n':
+            case '\r':
+                tty->buffer[tty->nPos] = 0;
+                return;
+                
+//            case 0x12:  // ^R
+//                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
+//                tmxr_linemsgf (tmln, PROMPT, getDevList());
+//                tty->buffer[tty->nPos] = 0;
+//                tmxr_linemsg  (tmln, tty->buffer);
+//                break;
+                
+                
+            default:
+                break;
+        }
+        
+    }
+   
+    return ;  // stay in input mode
+
   }
 
 

@@ -15,7 +15,7 @@
 #include "fnp_ipc.h"
 
 t_stat fnp_command(char *nodename, char *id, char *arg3);
-void sendInputLine (int hsla_line_num, char * buffer, int nChars);
+void sendInputLine (int hsla_line_num, char * buffer, int nChars, bool isBreak);
 
 
 

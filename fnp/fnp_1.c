@@ -162,7 +162,8 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
             break;
         case ePassThrough:
             //MuxWrite(line, kar);
-            processInputCharacter (line, kar);
+           // processInputCharacter (line, kar);
+            processInputCharacter(mp, tmln, tty, line, kar);
             break;
         default:
             break;

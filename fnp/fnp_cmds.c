@@ -583,15 +583,14 @@ ipc_printf ("tell CPU to send_output\n");
 }
 
 
-void sendInputLine (int hsla_line_num, char * buffer, int nChars)
+void sendInputLine (int hsla_line_num, char * buffer, int nChars, bool isBreak)
   {
     // Our encoding scheme is 2 hex digits/char
 
     // temporary until the logic is in place XXX
     int outputChainPresent = 0;
 
-    // temporary until the logic is in place XXX
-    int breakPresent = 1;
+    int breakPresent = isBreak ? 1 : 0;
 
     // Our encoding scheme is 2 hex digits/char
     char cmd [256 + 2 * nChars];
