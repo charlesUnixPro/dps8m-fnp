@@ -542,10 +542,10 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
         tty->nPos = 0;
         tty->buffer[tty->nPos] = 0;
         return;
-        
-        // yes. Only allow \n, \r, ^H, ^R
-//        switch (kar)
-//        {
+    }
+    
+    switch (kar)
+    {
 //            case '\b':  // backspace
 //            case 127:   // delete
 //                tmxr_linemsg(tmln, "\b \b");    // remove char from line
@@ -553,9 +553,17 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
 //                tty->nPos -= 1;                 // back up buffer pointer
 //                break;
 //                
-//            case '\n':
-//            case '\r':
-//                tty->buffer[tty->nPos] = 0;
+        case '\n':          // NL
+        case '\r':          // CR
+        case 0x03:          // ETX (^C)
+            kar = '\n';     // translate to NL
+            tty->buffer[tty->nPos] = kar;
+            tty->nPos += 1;
+            sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, false);
+            tty->nPos = 0;
+            tty->buffer[tty->nPos] = 0;
+            return;
+            
 //                return eEndOfLine;              // EOL found
 //                
 //            case 0x12:  // ^R
@@ -566,8 +574,6 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
 //                
 //            default:
 //                break;
-//        }
-        return;  // stay in input mode
     }
     
     if (isprint(kar))   // printable?
