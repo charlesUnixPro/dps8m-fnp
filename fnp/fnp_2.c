@@ -512,11 +512,14 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
 
 
     // echo \r, \n & \t
-    if (MState . line [hsla_line_num] .crecho && kar == '\r')
-        MuxWrite(line, kar);
-    else if (MState . line [hsla_line_num] .lfecho && kar == '\n')
-        MuxWrite(line, kar);
-    else if (MState . line [hsla_line_num] .tabecho && kar == '\t') // may have to translate tabs to spaces ... later
+    if (MState . line [hsla_line_num] .crecho && kar == '\n')   // echo a CR when a LF is typed
+        MuxWrite(line, '\r');
+    else if (MState . line [hsla_line_num] .lfecho && kar == '\r')  // echoes and inserts a LF in the users input stream when a CR is typed
+    {
+        MuxWrite(line, '\n');
+        kar = '\n';
+    }
+    else if (MState . line [hsla_line_num] .tabecho && kar == '\t') // have to translate tabs to spaces ... later
         MuxWrite(line, kar);
     
     
