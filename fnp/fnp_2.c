@@ -519,9 +519,15 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
         MuxWrite(line, '\n');
         kar = '\n';
     }
-    else if (MState . line [hsla_line_num] .tabecho && kar == '\t') // have to translate tabs to spaces ... later
-        MuxWrite(line, kar);
-    
+    else if (MState . line [hsla_line_num] .tabecho && kar == '\t') // echos the appropriate number of spaces when a TAB is typed
+    {
+        int nCol = tty->nPos;        // since nPos starts at 0 this'll work well with % operator
+        // for now we use tabstops of 1,11,21,31,41,51, etc...
+        nCol += 10;                  // 10 spaces/tab
+        int nSpaces = 10 - (nCol % 10);
+        for(int i = 0 ; i < nSpaces ; i += 1)
+            MuxWrite(line, ' ');
+    }
     
     // send of each and every character
     if (MState . line [hsla_line_num] .breakAll)

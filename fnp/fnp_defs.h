@@ -217,9 +217,10 @@ typedef struct
         t_bool echoPlex;    // echoes all characters types on the terminal
         t_bool erkl;        // performs "erase" and "kill" processing
         t_bool esc;         // performs escape processing
-        t_bool crecho;      // echoes a CR when a LF is typed
-        t_bool lfecho;      // echoes and inserts  a LF in the users input stream when a CR is typed
-        t_bool tabecho;     // echoes the appropriate number of spaces when a TAB is typed
+        t_bool crecho;      // echos a CR when a LF is typed
+        t_bool lfecho;      // echos and inserts  a LF in the users input stream when a CR is typed
+        t_bool tabecho;     // echos the appropriate number of spaces when a TAB is typed
+        t_bool tabs;        // inserts tabs in output in place of spaces when appropriate. If tabs mode is off, all tab characters are mapped into the appropriate number of spaces
         t_bool replay;
         t_bool polite;
         t_bool prefixnl;
