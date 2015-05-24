@@ -66,6 +66,8 @@ struct muxtermio
     char        buffer[1024];   // line buffer for initial device selection and line discipline
     int32       nPos;           // position where *next* user input is to be stored
     MUXTERMSTATE state;         // state of tty (eDisconnected, eInput ePassThrough)
+    
+    //t_MState    MState;         // RFU
 };
 
 typedef struct muxtermio MUXTERMIO;
@@ -76,7 +78,7 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
 
 extern MUXTERMIO ttys[MAX_LINES];
 
-void processInputCharacter (int line, int kar);
 void connectPrompt (TMLN *tmln);
+void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar);
 
 #endif /* defined(__fnp__fnp_2__) */

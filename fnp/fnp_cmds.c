@@ -515,7 +515,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
     } else if (strcmp(keyword, "block_xfer") == 0)
     {
         int p1, p2, p3;
-        int n = sscanf(arg3, "%*s %d %d", &p1, &p2, &p3);
+        int n = sscanf(arg3, "%*s %d %d %d", &p1, &p2, &p3);
         if (n != 3)
             return SCPE_ARG;
         ipc_printf("received block_xfer %d %d %d ...\n", p1, p2, p3);
@@ -631,15 +631,14 @@ ipc_printf ("tell CPU to send_output\n");
 }
 
 
-void sendInputLine (int hsla_line_num, char * buffer, int nChars)
+void sendInputLine (int hsla_line_num, char * buffer, int nChars, bool isBreak)
   {
     // Our encoding scheme is 2 hex digits/char
 
     // temporary until the logic is in place XXX
     int outputChainPresent = 0;
 
-    // temporary until the logic is in place XXX
-    int breakPresent = 1;
+    int breakPresent = isBreak ? 1 : 0;
 
     // Our encoding scheme is 2 hex digits/char
     char cmd [256 + 2 * nChars];

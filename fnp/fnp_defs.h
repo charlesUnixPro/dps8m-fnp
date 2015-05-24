@@ -208,12 +208,19 @@ typedef struct
         int inputBufferSize;
         int ctrlStrIdx;
         t_bool breakAll;
+        t_bool can;         // performs standard canonicalization when on (default on)
+        t_bool capo;        // outputs all lowercase chars in uppercase
+        t_bool ctl_char;    // specifies that ASCII control characters that do not cause carriage or paper motion are to be accepted as input
+        t_bool _default;    // same as saying erkl, can, ^rawi, *rawc, ^Wake_tbl, and esc
         t_bool handleQuit;
         t_bool fullDuplex;
-        t_bool echoPlex;
-        t_bool crecho;
-        t_bool lfecho;
-        t_bool tabecho;
+        t_bool echoPlex;    // echoes all characters types on the terminal
+        t_bool erkl;        // performs "erase" and "kill" processing
+        t_bool esc;         // performs escape processing
+        t_bool crecho;      // echos a CR when a LF is typed
+        t_bool lfecho;      // echos and inserts  a LF in the users input stream when a CR is typed
+        t_bool tabecho;     // echos the appropriate number of spaces when a TAB is typed
+        t_bool tabs;        // inserts tabs in output in place of spaces when appropriate. If tabs mode is off, all tab characters are mapped into the appropriate number of spaces
         t_bool replay;
         t_bool polite;
         t_bool prefixnl;

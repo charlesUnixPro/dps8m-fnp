@@ -160,7 +160,8 @@ baitAndSwitch:
             break;
         case ePassThrough:
             //MuxWrite(line, kar);
-            processInputCharacter (line, kar);
+           // processInputCharacter (line, kar);
+            processInputCharacter(mp, tmln, tty, line, kar);
             break;
         default:
             break;
