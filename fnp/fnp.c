@@ -6,7 +6,6 @@
 //  Copyright (c) 2014 Harry Reed. All rights reserved.
 //
 
-
 #include "sim_defs.h"
 #include "sim_tmxr.h"
 #include "fnp_mux.h"
@@ -75,6 +74,11 @@ static void fnp_init(void)
     // sim_timer_init hasn't been called yet, so this doesn't work
     //t_stat stat = sim_set_idle (NULL, 0, "1", NULL); 
     //ipc_printf ("sim_set_idle returned %d\n", stat);
+    for (int i = 0; i < MAX_LINES; i ++)
+    {
+      ttys [i] . mux_line = -1;
+      MState . line [i] . muxLineNum = -1;
+    }
 }
 void (*sim_vm_init) (void) = &fnp_init;    //CustomCmds;
 
@@ -135,9 +139,17 @@ t_stat sim_instr (void)
     int reason = 0;
     int32 n = 0;
 
-    t_stat stat = sim_set_idle (NULL, 0, "10", NULL); 
-    if (stat)
-        ipc_printf ("sim_set_idle returned %d\n", stat);
+#ifdef IDLE
+    static bool idle_inited = false;
+    if (! idle_inited)
+    {
+        idle_inited = true;
+
+        t_stat stat = sim_set_idle (NULL, 0, "10", NULL); 
+        if (stat)
+            ipc_printf ("sim_set_idle returned %d\n", stat);
+    }
+#endif
 
     clk(STCLK, 0, 0);        // start clock
     mux(SLS, 0, 0);
@@ -212,10 +224,12 @@ t_stat sim_instr (void)
         //usleep (1); // 1 usec???
         //static struct timespec ts = {0, 1};
         //nanosleep (& ts, NULL);
+#ifdef IDLE
 //if (sim_interval % 256 == 0) {
         t_bool flg = sim_idle (/* clk # */ 0, /* decr interval */ false);
         //if (flg) ipc_printf ("sim_idle returned %s\n", flg ? "true" : "false");
 //}
+#endif
     }
     
     // if IPC was running before G leave it running - don't stop it, else stop it if it was started in sim_instr()

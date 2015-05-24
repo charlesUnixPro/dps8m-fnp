@@ -82,6 +82,9 @@ Commands sent from dps8m to fFNP:
             "terminal_accepted %d"
                 Parameter is line number (0 - 31) of a HSLA line.
 
+           "disconnect_line %d"
+                Parameter is line number (0 - 31) of a HSLA line.
+
             "break_all %d %d"
                 First parameter is line number (0 - 31) of a HSLA line.
                 Second parameter is 0 (disable) or 1 (enable).
@@ -200,6 +203,9 @@ Commands sent from fFNP to DPS8m:
                accept_direct_input commands; the command will be
                realized in DIA code based on the number of characters 
                available.
+
+            "line_disconnected %d"
+                Line %d has been disconnected.
 
 Encoded data stream: 
 

@@ -7,7 +7,6 @@
 //
 
 #include "fnp_defs.h"
-#include "sim_tmxr.h"
 
 #include "fnp_mux.h"
 
@@ -27,16 +26,15 @@ getDevList();
 t_stat OnMuxConnect(TMLN *tmln, int line)
 {
     sim_printf("%s CONNECT %d\n", Now(), line);
-    
+    connectPrompt (tmln);
+ 
     if (MState . accept_calls)
-    {
-        tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
         ttys[line].state = eInput;      // waiting for user input
-    } else {
-        tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
+    else
         ttys[line].state = eUnassigned;      // waiting for user input
-    }
+ 
     ttys[line].mux_line = line;
+    ttys[line].tmln = tmln;
     
     return SCPE_OK;
 }
@@ -107,23 +105,23 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
         case eDisconnected:
             break;
         case eUnassigned:
+            connectPrompt (tmln);
             if (MState . accept_calls)
             {
-                tmxr_linemsgf (tmln, "HSLA Port (%s)? ", getDevList());
                 ttys[line].state = eInput;      // waiting for user input
-            } else {
-                tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
+                goto baitAndSwitch;
             }
             break;
         case eInput:
             if (! MState . accept_calls) // Accept calls got dropped between
                                    // eUnassigned and eInput
             {
-                tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
+                connectPrompt (tmln);
                 ttys[line].state = eUnassigned;
                 break;
             }
 
+baitAndSwitch:
             switch (processUserInput(mp, tmln, tty, line, kar))
             {
                 case eEndOfLine:

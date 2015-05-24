@@ -228,4 +228,6 @@ typedef struct
   } t_MState;
 extern t_MState MState;
 
+// define to enable sim_idle code
+#define IDLE
 #endif

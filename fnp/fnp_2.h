@@ -77,5 +77,6 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
 extern MUXTERMIO ttys[MAX_LINES];
 
 void processInputCharacter (int line, int kar);
+void connectPrompt (TMLN *tmln);
 
 #endif /* defined(__fnp__fnp_2__) */

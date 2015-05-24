@@ -13,11 +13,6 @@
 
 t_MState MState;
 
-//bool MS_accept_calls = false;
-//bool MS_listen [MAX_LINES];
-//int MS_input_buffer_size [MAX_LINES];
-//int MS_csi [MAX_LINES];
-
 static char * unpack (char * buffer)
   {
     char * p = strstr (buffer, "data:");
@@ -68,29 +63,32 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 {
     ipc_printf("fnp_command(\"%s\", \"%s\", \"%s\")\n", nodename, id, arg3);
     
+    size_t arg3_len = strlen (arg3);
+    char keyword [arg3_len];
+    sscanf (arg3, "%s", keyword);
 
-    if (strcmp(arg3, "bootload") == 0)
+    if (strcmp(keyword, "bootload") == 0)
     {
         ipc_printf("Received BOOTLOAD command...\n");
         
 
 
 
-    } else if (strcmp(arg3, "accept_calls") == 0)
+    } else if (strcmp(keyword, "accept_calls") == 0)
     {
         ipc_printf("Received ACCEPT_CALLS command...\n");
         MState . accept_calls = true;
 
 
 
-    } else if (strcmp(arg3, "dont_accept_calls") == 0)
+    } else if (strcmp(keyword, "dont_accept_calls") == 0)
     {
         ipc_printf("Received DONT_ACCEPT_CALLS command...\n");
         MState . accept_calls = false;
 
 
 
-    } else if (strncmp(arg3, "listen", 6) == 0)
+    } else if (strcmp(keyword, "listen") == 0)
     {
         int p1, p2, p3;
         int n = sscanf(arg3, "%*s %d %d %d", &p1, &p2, &p3);
@@ -109,10 +107,23 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         }
         MState . line [p1] . listen = p2 != 0;
         MState . line [p1] . inputBufferSize = p3;
+#if 0
+// Can't report listening on line # because if you weren't listening you can't hace a line #
+// Need to rework the logic a bit;the user needs to be abe to grab a line even if Multics is 
+// not accepting calls, or not listening to a line. When the listen comes, then we send the
+// accept_new_terminal.
+        if (p2)
+        {
+            int muxLineNum = MState.line[p1].muxLineNum;
+            if (muxLineNum != -1 && ttys[muxLineNum].state == eUnassigned)
+            {
+                
+                connectPrompt (ttys[muxLineNum].tmln);
+            }
+        }
+#endif
 
-
-
-    } else if (strncmp(arg3, "change_control_string", 21) == 0)
+    } else if (strcmp(keyword, "change_control_string") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -128,7 +139,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "dump_input", 10) == 0)
+    } else if (strcmp(keyword, "dump_input") == 0)
     {
         int p1;
         int n = sscanf(arg3, "%*s %d", &p1);
@@ -146,7 +157,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
        ttys [muxLineNo] . nPos = 0; 
 
 
-    } else if (strncmp(arg3, "wru", 3) == 0)
+    } else if (strcmp(keyword, "wru") == 0)
     {
         int p1;
         int n = sscanf(arg3, "%*s %d", &p1);
@@ -166,7 +177,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "terminal_accepted", 17) == 0)
+    } else if (strcmp(keyword, "terminal_accepted") == 0)
     {
         int p1;
         int n = sscanf(arg3, "%*s %d", &p1);
@@ -185,7 +196,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "break_all", 8) == 0)
+    } else if (strcmp(keyword, "break_all") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -207,7 +218,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "handle_quit", 11) == 0)
+    } else if (strcmp(keyword, "handle_quit") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -228,7 +239,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "full_duplex", 11) == 0)
+    } else if (strcmp(keyword, "full_duplex") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -249,7 +260,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "echoplex", 8) == 0)
+    } else if (strcmp(keyword, "echoplex") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -270,7 +281,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "crecho", 6) == 0)
+    } else if (strcmp(keyword, "crecho") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -291,7 +302,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "lfecho", 6) == 0)
+    } else if (strcmp(keyword, "lfecho") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -312,7 +323,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "tabecho", 7) == 0)
+    } else if (strcmp(keyword, "tabecho") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -333,7 +344,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "replay", 6) == 0)
+    } else if (strcmp(keyword, "replay") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -354,7 +365,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "polite", 6) == 0)
+    } else if (strcmp(keyword, "polite") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -375,7 +386,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "prefixnl", 8) == 0)
+    } else if (strcmp(keyword, "prefixnl") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -396,7 +407,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "eight_bit_out", 13) == 0)
+    } else if (strcmp(keyword, "eight_bit_out") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -417,7 +428,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "eight_bit_in", 12) == 0)
+    } else if (strcmp(keyword, "eight_bit_in") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -438,7 +449,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "odd_parity", 10) == 0)
+    } else if (strcmp(keyword, "odd_parity") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -459,7 +470,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "output_flow_control", 19) == 0)
+    } else if (strcmp(keyword, "output_flow_control") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -480,7 +491,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "input_flow_control", 18) == 0)
+    } else if (strcmp(keyword, "input_flow_control") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -501,7 +512,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "block_xfer", 10) == 0)
+    } else if (strcmp(keyword, "block_xfer") == 0)
     {
         int p1, p2, p3;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2, &p3);
@@ -518,13 +529,13 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "set_delay_table", 15) == 0)
+    } else if (strcmp(keyword, "set_delay_table") == 0)
     {
         int p1, d1, d2, d3, d4, d5, d6;
         int n = sscanf(arg3, "%*s %d %d %d %d %d %d %d", &p1, &d1, &d2, &d3, &d4, &d5, &d6);
         if (n != 7)
             return SCPE_ARG;
-        ipc_printf("received set_delay_table %d %d ...\n", p1, d1, d2, d3, d4, d5, d6);
+        ipc_printf("received set_delay_table %d %d %d %d %d %d %d...\n", p1, d1, d2, d3, d4, d5, d6);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: set_delay_table p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -540,7 +551,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
 
 
 
-    } else if (strncmp(arg3, "output", 6) == 0)
+    } else if (strcmp(keyword, "output") == 0)
     {
         int p1, p2;
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
@@ -570,13 +581,50 @@ ipc_printf ("msg:<%s>\n", data);
               * q ++ = c;
           }
         * q ++ = 0;
-        tmxr_linemsg (& mux_ldsc [p1], clean);
+
+        int muxLineNum = MState . line [p1] . muxLineNum;
+        tmxr_linemsg (& mux_ldsc [muxLineNum], clean);
         free (data);
         free (clean);
         char msg [256];
         sprintf (msg, "send_output %d", p1);
 ipc_printf ("tell CPU to send_output\n");
         tellCPU (0, msg);
+
+
+
+
+    } else if (strcmp(keyword, "disconnect_line") == 0)
+    {
+        int p1;
+        int n = sscanf(arg3, "%*s %d", &p1);
+        if (n != 1)
+            return SCPE_ARG;
+        ipc_printf("received disconnect_line %d\n", p1);
+        if (p1 < 0 && p1 >= MAX_LINES)
+        {
+            ipc_printf("err: disconnect_line p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
+            return SCPE_ARG;
+        }
+        int muxLineNum = MState.line[p1].muxLineNum;
+        tmxr_linemsg(ttys[muxLineNum].tmln, "Multics has disconnected you\r\n");
+
+        ttys[muxLineNum].fmti->inUse = false;
+        ttys[muxLineNum].fmti = NULL;
+
+        connectPrompt(ttys[muxLineNum].tmln);
+        ttys[muxLineNum].state = eUnassigned;
+        char msg [256];
+        sprintf (msg, "line_disconnected %d", p1);
+        tellCPU (0, msg);
+        
+
+
+
+
+    } else {
+       ipc_printf ("dropping <%s>\n", arg3);
+       return SCPE_ARG;
     }
     
     return SCPE_OK;

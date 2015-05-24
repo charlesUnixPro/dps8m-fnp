@@ -321,6 +321,16 @@ ATTRIBUTE *searchForAttribute(char *attrib, ATTRIBUTE *a)
 MUXTERMIO ttys[MAX_LINES];
 extern TMLN mux_ldsc[MAX_LINES];
 
+void connectPrompt (TMLN *tmln)
+{
+    if (MState . accept_calls)
+    {
+        tmxr_linemsgf (tmln, PROMPT, getDevList());
+    } else {
+        tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
+    }
+}
+
 MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar)
 {
     if (kar == 0x1b || kar == 0x03)             // ESCape ('\e') | ^C
