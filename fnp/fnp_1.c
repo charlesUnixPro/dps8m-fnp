@@ -28,11 +28,7 @@ t_stat OnMuxConnect(TMLN *tmln, int line)
     sim_printf("%s CONNECT %d\n", Now(), line);
     connectPrompt (tmln);
  
-    if (MState . accept_calls)
-        ttys[line].state = eInput;      // waiting for user input
-    else
-        ttys[line].state = eUnassigned;      // waiting for user input
- 
+    ttys[line].state = eInput;      // waiting for user input
     ttys[line].mux_line = line;
     ttys[line].tmln = tmln;
     
@@ -104,24 +100,7 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
     {
         case eDisconnected:
             break;
-        case eUnassigned:
-            connectPrompt (tmln);
-            if (MState . accept_calls)
-            {
-                ttys[line].state = eInput;      // waiting for user input
-                goto baitAndSwitch;
-            }
-            break;
         case eInput:
-            if (! MState . accept_calls) // Accept calls got dropped between
-                                   // eUnassigned and eInput
-            {
-                connectPrompt (tmln);
-                ttys[line].state = eUnassigned;
-                break;
-            }
-
-baitAndSwitch:
             switch (processUserInput(mp, tmln, tty, line, kar))
             {
                 case eEndOfLine:
@@ -137,6 +116,18 @@ baitAndSwitch:
                         tmxr_linemsgf (tmln, "%s", strFMTI(q, line));
                         
                         sim_printf("%s LINE %d CONNECTED AS %s\n", Now(), line, q->multics.name);
+                        if (! MState.accept_calls)
+                        {
+                            tmxr_linemsg (tmln, "Multics is not accepting calls\r\n");
+                            break;
+                        } else {
+                            int hsla_line_num = tty->fmti->multics.hsla_line_num; 
+                            if (! MState.line[hsla_line_num] . listen)
+                            {
+                                tmxr_linemsg (tmln, "Multics is not listening to this line\r\n");
+                                break;
+                            }
+                        }
                         char buf [256];
                         sprintf (buf, "accept_new_terminal %d 1 0", q->multics.hsla_line_num);
                         tellCPU (0, buf);
@@ -159,6 +150,18 @@ baitAndSwitch:
             }
             break;
         case ePassThrough:
+            if (! MState.accept_calls)
+            {
+                tmxr_linemsg (tmln, "Multics is not accepting calls\r\n");
+                break;
+            }
+            int hsla_line_num = tty->fmti->multics.hsla_line_num; 
+            if (! MState.line[hsla_line_num] . listen)
+            {
+                tmxr_linemsg (tmln, "Multics is not listening to this line\r\n");
+                break;
+            }
+
             //MuxWrite(line, kar);
            // processInputCharacter (line, kar);
             processInputCharacter(mp, tmln, tty, line, kar);

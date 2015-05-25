@@ -23,7 +23,6 @@
 enum muxtermstate
 {
     eDisconnected = 0,  // disconnected
-    eUnassigned,        // not yet assigned a Multics device
     eInput,             // waiting for user input
     ePassThrough,       // passthought mode
     eEndOfLine,         // EOL detected during user input (\r or \n)

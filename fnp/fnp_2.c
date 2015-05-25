@@ -272,8 +272,7 @@ getDevList()
     while (t)
     {
         if (t->inUse == false &&
-            t->multics.hsla_line_num != -1 &&
-            MState . line [t->multics.hsla_line_num] . listen)
+            t->multics.hsla_line_num != -1)
         {
             if (strlen(buf) > 0)
                 strcat(buf, ",");
@@ -323,12 +322,7 @@ extern TMLN mux_ldsc[MAX_LINES];
 
 void connectPrompt (TMLN *tmln)
 {
-    if (MState . accept_calls)
-    {
-        tmxr_linemsgf (tmln, PROMPT, getDevList());
-    } else {
-        tmxr_linemsgf (tmln, "Multics is not accepting calls\n");
-    }
+    tmxr_linemsgf (tmln, PROMPT, getDevList());
 }
 
 MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int32 kar)

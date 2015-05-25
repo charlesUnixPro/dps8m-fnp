@@ -107,21 +107,17 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         }
         MState . line [p1] . listen = p2 != 0;
         MState . line [p1] . inputBufferSize = p3;
-#if 0
-// Can't report listening on line # because if you weren't listening you can't hace a line #
-// Need to rework the logic a bit;the user needs to be abe to grab a line even if Multics is 
-// not accepting calls, or not listening to a line. When the listen comes, then we send the
-// accept_new_terminal.
         if (p2)
         {
             int muxLineNum = MState.line[p1].muxLineNum;
-            if (muxLineNum != -1 && ttys[muxLineNum].state == eUnassigned)
+            if (muxLineNum != -1 && ttys[muxLineNum].state == ePassThrough)
             {
-                
-                connectPrompt (ttys[muxLineNum].tmln);
+                tmxr_linemsg(ttys[muxLineNum].tmln, "Multics is now listening to this line\r\n");
+                char buf [256];
+                sprintf (buf, "accept_new_terminal %d 1 0", p1);
+                tellCPU (0, buf);
             }
         }
-#endif
 
     } else if (strcmp(keyword, "change_control_string") == 0)
     {
@@ -609,11 +605,6 @@ ipc_printf ("tell CPU to send_output\n");
         int muxLineNum = MState.line[p1].muxLineNum;
         tmxr_linemsg(ttys[muxLineNum].tmln, "Multics has disconnected you\r\n");
 
-        ttys[muxLineNum].fmti->inUse = false;
-        ttys[muxLineNum].fmti = NULL;
-
-        connectPrompt(ttys[muxLineNum].tmln);
-        ttys[muxLineNum].state = eUnassigned;
         char msg [256];
         sprintf (msg, "line_disconnected %d", p1);
         tellCPU (0, msg);
@@ -651,5 +642,6 @@ void sendInputLine (int hsla_line_num, char * buffer, int nChars, bool isBreak)
          * tail ++ = "0123456789abcdef" [(buffer [i] >> 4) % 16];
          * tail ++ = "0123456789abcdef" [(buffer [i]     ) % 16];
        }
+    * tail = 0;
     tellCPU (0, cmd);
   }
