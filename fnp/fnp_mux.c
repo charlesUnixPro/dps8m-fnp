@@ -45,7 +45,11 @@ int32 mux_int_req, mux_busy, mux_done, mux_disable;
 
 UNIT mux_unit =
 {
-      UDATA (&mux_svc, (UNIT_DISABLE + UNIT_ATTABLE /* + UNIT_IDLE */), 0)
+#ifdef IDLE
+      UDATA (&mux_svc, (UNIT_DISABLE + UNIT_ATTABLE + UNIT_IDLE), 0)
+#else
+      UDATA (&mux_svc, (UNIT_DISABLE + UNIT_ATTABLE), 0)
+#endif
 } ;
 
 DIB mux_dib = { DEV_FNPMUX, FNP_INT_MUX, PI_MUX, &mux } ;

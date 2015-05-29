@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Harry Reed. All rights reserved.
 //
 
+#include <string.h>
 //#include "fnp_defs.h"
 #include "fnp_cmds.h"
 #include "fnp_2.h"
@@ -13,18 +14,28 @@
 
 t_MState MState;
 
-static char * unpack (char * buffer)
+static char * unpack (char * buffer, int which, size_t * retSize)
   {
-    char * p = strstr (buffer, "data:");
-    if (! p)
-      return NULL;
-    p += 5; // strlen ("data:");
+    char * p = buffer;
+    for (int i = 0; i < which; i ++)
+      {
+        //ipc_printf ("unpack i %d p %s strstr %s\n", i, p, strstr (p, "data:"));
+        p = strstr (p, "data:");
+        if (! p)
+          return NULL;
+        p += 5; // strlen ("data:");
+      }
     char * q;
     int nBytes = strtol (p, & q, 10);
     if (p == q)
       return NULL;
     if (* q != ':')
       return NULL;
+    if (nBytes < 0)
+      {
+        ipc_printf ("unpack nBytes (%d) < 0; skipping\n", nBytes);
+        return NULL;
+      }
     q ++;
     char * out = malloc (nBytes);
     if (! out)
@@ -34,25 +45,27 @@ static char * unpack (char * buffer)
       {
         int val;
 
-        char ch = * q ++;
-        if (ch >= '0' && ch <= '9')
-          val = (ch - '0') << 4;
-        else if (ch >= 'a' && ch<= 'f')
-          val = (ch - 'a' + 10) << 4;
+        char chh = * q ++;
+        if (chh >= '0' && chh <= '9')
+          val = (chh - '0') << 4;
+        else if (chh >= 'a' && chh<= 'f')
+          val = (chh - 'a' + 10) << 4;
         else
           goto fail;
 
-        ch = * q ++;
-        if (ch >= '0' && ch <= '9')
-          val |= (ch - '0');
-        else if (ch >= 'a' && ch<= 'f')
-          val |= (ch - 'a' + 10);
+        char chl = * q ++;
+        if (chl >= '0' && chl <= '9')
+          val |= (chl - '0');
+        else if (chl >= 'a' && chl<= 'f')
+          val |= (chl - 'a' + 10);
         else
           goto fail;
 
-        //ipc_printf ("%c%c %02x\n", *(q - 2), *(q - 1), val);
+        //ipc_printf ("%c%c %02x\n", chh, chl, val);
         * o ++ = val;
       }
+    if (retSize)
+      * retSize = nBytes;
     return out;
 fail:
     free (out);
@@ -70,7 +83,17 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
     if (strcmp(keyword, "bootload") == 0)
     {
         ipc_printf("Received BOOTLOAD command...\n");
-        
+        MState . accept_calls = false;
+        for (int p1 = 0; p1 < MAX_LINES; p1 ++)
+          {
+            MState . line [p1] . listen = false;
+            int muxLineNum = MState.line[p1].muxLineNum;
+            if (muxLineNum != -1)
+            {
+                tmxr_linemsg(ttys[muxLineNum].tmln, "The FNP has been restarted\r\n");
+            }
+        }
+
 
 
 
@@ -559,7 +582,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
             ipc_printf("err: output p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
             return SCPE_ARG;
         }
-        char * data = unpack (arg3);
+        char * data = unpack (arg3, 1, NULL);
 ipc_printf ("msg:<%s>\n", data);
         if (! data)
         {
@@ -578,6 +601,7 @@ ipc_printf ("msg:<%s>\n", data);
           }
         * q ++ = 0;
 
+ipc_printf ("clean:<%s>\n", clean);
         int muxLineNum = MState . line [p1] . muxLineNum;
         tmxr_linemsg (& mux_ldsc [muxLineNum], clean);
         free (data);
@@ -610,7 +634,37 @@ ipc_printf ("tell CPU to send_output\n");
         tellCPU (0, msg);
         
 
+    } else if (strcmp(keyword, "output_fc_chars") == 0)
+    {
+        int p1;
+        int n = sscanf(arg3, "%*s %d", &p1);
+        if (n != 1)
+            return SCPE_ARG;
+        ipc_printf("received output_fc_chars %d\n", p1);
+        if (p1 < 0 && p1 >= MAX_LINES)
+        {
+            ipc_printf("err: disconnect_line p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
+            return SCPE_ARG;
+        }
+        size_t retSize;
 
+        char * data = unpack (arg3, 1, & retSize);
+        if (retSize > FC_STR_SZ)
+          {
+            ipc_printf ("data sz (%d) truncated\n", retSize);
+            retSize = FC_STR_SZ;
+          }
+        memcpy (MState . line [p1] . outputSuspendStr, data, retSize);
+        MState . line [p1] . outputSuspendLen = retSize;
+
+        data = unpack (arg3, 2, & retSize);
+        if (retSize > FC_STR_SZ)
+          {
+            ipc_printf ("data sz (%d) truncated\n", retSize);
+            retSize = FC_STR_SZ;
+          }
+        memcpy (MState . line [p1] . outputResumeStr, data, retSize);
+        MState . line [p1] . outputResumeLen = retSize;
 
 
     } else {

@@ -82,7 +82,7 @@ Commands sent from dps8m to fFNP:
             "terminal_accepted %d"
                 Parameter is line number (0 - 31) of a HSLA line.
 
-           "disconnect_line %d"
+            "disconnect_line %d"
                 Parameter is line number (0 - 31) of a HSLA line.
 
             "break_all %d %d"
@@ -160,7 +160,17 @@ Commands sent from dps8m to fFNP:
                 Second parameter is the number of output chars. avail.
                 Third parameter is encoded output data.
 
-Commands sent from fFNP to DPS8m:
+            "input_fc_char %d %s %s"
+                Set input flow control characters.
+                First parameter is line number (0-31) of a HSLA line.
+                Second parameter is the suspend string.
+                Third parameter is resume string.
+
+            "output_fc_char %d %s %s"
+                Set output flow control characters.
+                First parameter is line number (0-31) of a HSLA line.
+                Second parameter is the suspend string.
+                Third parameter is resume string.
 
     tellDPS8 (char * command)
 

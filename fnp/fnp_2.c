@@ -533,6 +533,10 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
             MuxWrite(line, ' ');
     }
     
+    // echo character
+    else if (MState . line [hsla_line_num] .echoPlex)
+        MuxWrite(line, kar);
+
     // send of each and every character
     if (MState . line [hsla_line_num] .breakAll)
     {
@@ -553,6 +557,7 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
     {
         sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, false);
         tty->nPos = 0;
+        ttys [line] . buffer [ttys [line] . nPos ++] = kar;
         tty->buffer[tty->nPos] = 0;
         return;
     }
@@ -572,7 +577,7 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
             kar = '\n';     // translate to NL
             tty->buffer[tty->nPos] = kar;
             tty->nPos += 1;
-            sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, false);
+            sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, true);
             tty->nPos = 0;
             tty->buffer[tty->nPos] = 0;
             return;

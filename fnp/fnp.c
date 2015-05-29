@@ -140,15 +140,15 @@ t_stat sim_instr (void)
     int32 n = 0;
 
 #ifdef IDLE
-    static bool idle_inited = false;
-    if (! idle_inited)
-    {
-        idle_inited = true;
+    //static bool idle_inited = false;
+    //if (! idle_inited)
+    //{
+        //idle_inited = true;
 
         t_stat stat = sim_set_idle (NULL, 0, "10", NULL); 
         if (stat)
             ipc_printf ("sim_set_idle returned %d\n", stat);
-    }
+    //}
 #endif
 
     clk(STCLK, 0, 0);        // start clock

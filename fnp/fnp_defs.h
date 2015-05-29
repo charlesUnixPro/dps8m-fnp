@@ -231,10 +231,19 @@ typedef struct
         t_bool input_flow_control;
         int block_xfer_in_frame, block_xfer_out_of_frame;
         int delay_table [6];
+#define FC_STR_SZ 4
+        int inputSuspendLen;
+        char inputSuspendStr [4];
+        int inputResumeLen;
+        char inputResumeStr [4];
+        int outputSuspendLen;
+        char outputSuspendStr [4];
+        int outputResumeLen;
+        char outputResumeStr [4];
       } line [MAX_LINES];
   } t_MState;
 extern t_MState MState;
 
 // define to enable sim_idle code
-#define IDLE
+//#define IDLE
 #endif
