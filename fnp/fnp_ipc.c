@@ -421,14 +421,14 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             
         case ipcEnter:
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s/%s has entered " STR(IPC_GROUP) "\n", arg1, arg2);
-            ipc_printf("(ENTER)      %s/%s has entered %s from %s\n", arg1, arg2, fnpGroup, arg3);
+            //ipc_printf("(ENTER)      %s/%s has entered %s from %s\n", arg1, arg2, fnpGroup, arg3);
             
             savePeer(arg1, arg2);
             break;
             
         case ipcExit:
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s has left " STR(IPC_GROUP) "\n", arg1);
-            ipc_printf("(EXIT)       %s/%s has left %s\n", arg1, arg2, fnpGroup);
+            //ipc_printf("(EXIT)       %s/%s has left %s\n", arg1, arg2, fnpGroup);
             removePeer(arg1);
             break;
             
@@ -459,7 +459,7 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             
         case ipcShoutRx:    // when we receive a broadcast message
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
-            ipc_printf("(RX SHOUT)   %s/%s:<%s>\n", arg1, arg2, arg3);
+            //ipc_printf("(RX SHOUT)   %s/%s:<%s>\n", arg1, arg2, arg3);
             
             /*
              * Insert code here to process any received broadcast message
@@ -468,7 +468,7 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
             break;
         case ipcWhisperRx:  // when we receive a peer-to-peer (whisper) message
             //sim_debug (DBG_VERBOSE, &ipc_dev, "%s: %s\n", arg1, arg2);
-            ipc_printf("(RX WHISPER) %s/%s:<%s>\n", arg1, arg2, arg3);
+            //ipc_printf("(RX WHISPER) %s/%s:<%s>\n", arg1, arg2, arg3);
             
             /*
              * Insert code here to process any received peer-to-peer message
@@ -494,7 +494,7 @@ t_stat ipc (ipc_funcs fn, char *arg1, char *arg2, char *arg3, int32 arg4)
 
 void tellCPU (int cpuUnitNum, char * msg)
   {
-    ipc_printf ("tellCPU (%s)\n", msg);
+    //ipc_printf ("tellCPU (%s)\n", msg);
 
 #define RETRIES 2048
     int retry;

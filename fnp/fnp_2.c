@@ -514,28 +514,36 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
 {
     int hsla_line_num = tty->fmti->multics.hsla_line_num;
 
-
-    // echo \r, \n & \t
-    if (MState . line [hsla_line_num] .crecho && kar == '\n')   // echo a CR when a LF is typed
-        MuxWrite(line, '\r');
-    else if (MState . line [hsla_line_num] .lfecho && kar == '\r')  // echoes and inserts a LF in the users input stream when a CR is typed
+    if (MState . line [hsla_line_num] .echoPlex)
     {
-        MuxWrite(line, '\n');
-        kar = '\n';
-    }
-    else if (MState . line [hsla_line_num] .tabecho && kar == '\t') // echos the appropriate number of spaces when a TAB is typed
-    {
-        int nCol = tty->nPos;        // since nPos starts at 0 this'll work well with % operator
-        // for now we use tabstops of 1,11,21,31,41,51, etc...
-        nCol += 10;                  // 10 spaces/tab
-        int nSpaces = 10 - (nCol % 10);
-        for(int i = 0 ; i < nSpaces ; i += 1)
-            MuxWrite(line, ' ');
-    }
+        // echo \r, \n & \t
+        if (MState . line [hsla_line_num] .crecho && kar == '\n')   // echo a CR when a LF is typed
+        {
+            MuxWrite(line, '\r');
+            MuxWrite(line, '\n');
+        }
+        else if (MState . line [hsla_line_num] .lfecho && kar == '\r')  // echoes and inserts a LF in the users input stream when a CR is typed
+        {
+            MuxWrite(line, '\r');
+            MuxWrite(line, '\n');
+            //kar = '\n';
+        }
+        else if (MState . line [hsla_line_num] .tabecho && kar == '\t') // echos the appropriate number of spaces when a TAB is typed
+        {
+            int nCol = tty->nPos;        // since nPos starts at 0 this'll work well with % operator
+            // for now we use tabstops of 1,11,21,31,41,51, etc...
+            nCol += 10;                  // 10 spaces/tab
+            int nSpaces = 10 - (nCol % 10);
+            for(int i = 0 ; i < nSpaces ; i += 1)
+                MuxWrite(line, ' ');
+        }
     
-    // echo character
-    else if (MState . line [hsla_line_num] .echoPlex)
-        MuxWrite(line, kar);
+        // echo character
+        else
+        {
+            MuxWrite(line, kar);
+        }
+    } // if echoPlex
 
     // send of each and every character
     if (MState . line [hsla_line_num] .breakAll)
@@ -548,6 +556,10 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
         return;
     }
     
+    // Multics seems to want CR changed to LF
+    if (kar == '\r')
+      kar = '\n';
+
     // nothing after here tested (yet)
     
     // buffer too full for anything more or we reach our buffer threshold?

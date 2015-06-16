@@ -74,7 +74,7 @@ fail:
 
 t_stat fnp_command(char *nodename, char *id, char *arg3)
 {
-    ipc_printf("fnp_command(\"%s\", \"%s\", \"%s\")\n", nodename, id, arg3);
+    //ipc_printf("fnp_command(\"%s\", \"%s\", \"%s\")\n", nodename, id, arg3);
     
     size_t arg3_len = strlen (arg3);
     char keyword [arg3_len];
@@ -117,7 +117,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d %d", &p1, &p2, &p3);
         if (n != 3)
             return SCPE_ARG; // listen is supposed to have 3 args
-        ipc_printf("received LISTEN %d %d %d ...\n", p1, p2, p3);
+        //ipc_printf("received LISTEN %d %d %d ...\n", p1, p2, p3);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: LISTEN p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -148,7 +148,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG; // change_control_string is supposed to have 2 args
-        ipc_printf("received CHANGE_CONTROL_STRING %d %d ...\n", p1, p2);
+        //ipc_printf("received CHANGE_CONTROL_STRING %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: CHANGE_CONTROL_STRING p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -164,7 +164,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d", &p1);
         if (n != 1)
             return SCPE_ARG;
-        ipc_printf("received dump_input %d ...\n", p1);
+        //ipc_printf("received dump_input %d ...\n", p1);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: DUMP_INPUT p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -182,7 +182,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d", &p1);
         if (n != 1)
             return SCPE_ARG;
-        ipc_printf("received WRU %d ...\n", p1);
+        //ipc_printf("received WRU %d ...\n", p1);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: WRU p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -202,7 +202,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d", &p1);
         if (n != 1)
             return SCPE_ARG;
-        ipc_printf("received terminal_accepted %d ...\n", p1);
+        //ipc_printf("received terminal_accepted %d ...\n", p1);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: terminal_accepted p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -221,7 +221,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received break_all %d %d ...\n", p1, p2);
+        //ipc_printf("received break_all %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: break_all p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -243,7 +243,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received handle_quit %d %d ...\n", p1, p2);
+        //ipc_printf("received handle_quit %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: handle_quit p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -264,7 +264,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received full_duplex %d ...\n", p1);
+        //ipc_printf("received full_duplex %d ...\n", p1);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: full_duplex p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -285,7 +285,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received echoplex %d %d ...\n", p1, p2);
+        //ipc_printf("received echoplex %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: echoplex p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -306,7 +306,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received crecho %d %d ...\n", p1, p2);
+        //ipc_printf("received crecho %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: crecho p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -327,7 +327,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received lfecho %d %d ...\n", p1, p2);
+        //ipc_printf("received lfecho %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: lfecho p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -348,7 +348,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received tabecho %d %d ...\n", p1, p2);
+        //ipc_printf("received tabecho %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: tabecho p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -369,7 +369,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received replay %d %d ...\n", p1, p2);
+        //ipc_printf("received replay %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: replay p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -390,7 +390,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received polite %d %d ...\n", p1, p2);
+        //ipc_printf("received polite %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: polite p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -411,7 +411,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received prefixnl %d %d ...\n", p1, p2);
+        //ipc_printf("received prefixnl %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: prefixnl p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -432,7 +432,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received eight_bit_out %d %d ...\n", p1, p2);
+        //ipc_printf("received eight_bit_out %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: eight_bit_out p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -453,7 +453,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received eight_bit_in %d %d ...\n", p1, p2);
+        //ipc_printf("received eight_bit_in %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: eight_bit_in p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -474,7 +474,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received odd_parity %d %d ...\n", p1, p2);
+        //ipc_printf("received odd_parity %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: odd_parity p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -495,7 +495,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received output_flow_control %d %d ...\n", p1, p2);
+        //ipc_printf("received output_flow_control %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: output_flow_control p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -516,7 +516,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received input_flow_control %d %d ...\n", p1, p2);
+        //ipc_printf("received input_flow_control %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: input_flow_control p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -537,7 +537,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d %d", &p1, &p2, &p3);
         if (n != 3)
             return SCPE_ARG;
-        ipc_printf("received block_xfer %d %d %d ...\n", p1, p2, p3);
+        //ipc_printf("received block_xfer %d %d %d ...\n", p1, p2, p3);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: block_xfer p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -554,7 +554,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d %d %d %d %d %d", &p1, &d1, &d2, &d3, &d4, &d5, &d6);
         if (n != 7)
             return SCPE_ARG;
-        ipc_printf("received set_delay_table %d %d %d %d %d %d %d...\n", p1, d1, d2, d3, d4, d5, d6);
+        //ipc_printf("received set_delay_table %d %d %d %d %d %d %d...\n", p1, d1, d2, d3, d4, d5, d6);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: set_delay_table p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -576,14 +576,14 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         int n = sscanf(arg3, "%*s %d %d", &p1, &p2);
         if (n != 2)
             return SCPE_ARG;
-        ipc_printf("received output %d %d ...\n", p1, p2);
+        //ipc_printf("received output %d %d ...\n", p1, p2);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: output p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
             return SCPE_ARG;
         }
         char * data = unpack (arg3, 1, NULL);
-ipc_printf ("msg:<%s>\n", data);
+//ipc_printf ("msg:<%s>\n", data);
         if (! data)
         {
             sim_printf ("illformatted output message data; dropping\n");
@@ -601,14 +601,14 @@ ipc_printf ("msg:<%s>\n", data);
           }
         * q ++ = 0;
 
-ipc_printf ("clean:<%s>\n", clean);
+//ipc_printf ("clean:<%s>\n", clean);
         int muxLineNum = MState . line [p1] . muxLineNum;
         tmxr_linemsg (& mux_ldsc [muxLineNum], clean);
         free (data);
         free (clean);
         char msg [256];
         sprintf (msg, "send_output %d", p1);
-ipc_printf ("tell CPU to send_output\n");
+//ipc_printf ("tell CPU to send_output\n");
         tellCPU (0, msg);
 
 
@@ -620,7 +620,7 @@ ipc_printf ("tell CPU to send_output\n");
         int n = sscanf(arg3, "%*s %d", &p1);
         if (n != 1)
             return SCPE_ARG;
-        ipc_printf("received disconnect_line %d\n", p1);
+        //ipc_printf("received disconnect_line %d\n", p1);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: disconnect_line p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
@@ -640,7 +640,7 @@ ipc_printf ("tell CPU to send_output\n");
         int n = sscanf(arg3, "%*s %d", &p1);
         if (n != 1)
             return SCPE_ARG;
-        ipc_printf("received output_fc_chars %d\n", p1);
+        //ipc_printf("received output_fc_chars %d\n", p1);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
             ipc_printf("err: disconnect_line p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
