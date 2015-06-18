@@ -16,6 +16,8 @@
 
 t_stat fnp_command(char *nodename, char *id, char *arg3);
 void sendInputLine (int hsla_line_num, char * buffer, int nChars, bool isBreak);
+t_stat dequeue_fnp_command (void);
+void fnpQueueInit (void);
 
 
 

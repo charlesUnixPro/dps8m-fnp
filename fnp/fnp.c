@@ -13,6 +13,7 @@
 #include "fnp_defs.h"
 #include "fnp_2.h"
 #include "fnp_ipc.h"
+#include "fnp_cmds.h"
 
 
 /* SCP data structures and interface routines
@@ -76,6 +77,7 @@ static void fnp_init(void)
       ttys [i] . mux_line = -1;
       MState . line [i] . muxLineNum = -1;
     }
+    fnpQueueInit ();
 }
 void (*sim_vm_init) (void) = &fnp_init;    //CustomCmds;
 
@@ -169,7 +171,7 @@ t_stat sim_instr (void)
     while (reason == 0)
     {                                            /* loop until ABORT */
         AIO_CHECK_EVENT;
-        
+        dequeue_fnp_command ();
         int32 temp = sim_poll_kbd ();
         switch(temp & 0x7f)
         {
