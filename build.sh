@@ -1,3 +1,4 @@
+mkdir BIN
 gcc -std=c99 \
  -U__STRICT_ANSI__  \
  -O0 -g \
