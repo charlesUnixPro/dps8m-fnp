@@ -645,7 +645,7 @@ t_stat dequeue_fnp_command (void)
             goto scpe_arg;
         }
         // delete NULs
-        char * clean = malloc (p2);
+        char * clean = malloc (p2 + 1);
         char * p = data;
         char * q = clean;
         for (int i = 0; i < p2; i ++)
