@@ -742,24 +742,44 @@ scpe_arg:
 
 void sendInputLine (int hsla_line_num, char * buffer, int nChars, bool isBreak)
   {
-    // Our encoding scheme is 2 hex digits/char
 
-    // temporary until the logic is in place XXX
-    int outputChainPresent = 0;
+    int inputBufferSize =  MState . line [hsla_line_num].inputBufferSize;
+    int remaining = nChars;
+    int offset = 0;
+    while (remaining > 0)
+      {
+        // Our encoding scheme is 2 hex digits/char
 
-    int breakPresent = isBreak ? 1 : 0;
+        // temporary until the logic is in place XXX
+        int outputChainPresent = 0;
 
-    // Our encoding scheme is 2 hex digits/char
-    char cmd [256 + 2 * nChars];
-    sprintf (cmd, "input %d %d %d %d data:%d:", hsla_line_num, nChars, outputChainPresent, breakPresent, nChars);
-    char * tail = cmd;
-    while (* tail)
-      tail ++;
-    for (int i = 0; i < nChars; i ++)
-       {
-         * tail ++ = "0123456789abcdef" [(buffer [i] >> 4) % 16];
-         * tail ++ = "0123456789abcdef" [(buffer [i]     ) % 16];
-       }
-    * tail = 0;
-    tellCPU (0, cmd);
+        int breakPresent;
+
+        int thisSize;
+        if (remaining > inputBufferSize)
+          {
+            thisSize = inputBufferSize;
+            breakPresent = false;
+          }
+        else
+          {
+            thisSize = remaining;
+            breakPresent = isBreak ? 1 : 0;
+          }
+        // Our encoding scheme is 2 hex digits/char
+        char cmd [256 + 2 * thisSize];
+        sprintf (cmd, "input %d %d %d %d data:%d:", hsla_line_num, thisSize, outputChainPresent, breakPresent, thisSize);
+        char * tail = cmd;
+        while (* tail)
+          tail ++;
+        for (int i = 0; i < thisSize; i ++)
+           {
+             * tail ++ = "0123456789abcdef" [(buffer [i + offset] >> 4) % 16];
+             * tail ++ = "0123456789abcdef" [(buffer [i + offset]     ) % 16];
+           }
+        * tail = 0;
+        tellCPU (0, cmd);
+        offset += thisSize;
+        remaining -= thisSize;
+      }
   }

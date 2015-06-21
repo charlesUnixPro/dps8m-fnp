@@ -538,6 +538,15 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
                 MuxWrite(line, ' ');
         }
     
+        // XXX slightly bogus logic here..
+        // ^R ^U ^H DEL LF CR FF ETX 
+        else if (kar == '\022'  || kar == '\025' || kar == '\b' ||
+                 kar == 127     || kar == '\n'   || kar == '\r' || 
+                 kar == '\f'    || kar == '\003')
+        {
+          // handled below
+        }
+
         // echo character
         else
         {
@@ -549,6 +558,7 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
     if (MState . line [hsla_line_num] .breakAll)
     {
         ttys [line] . buffer [ttys [line] . nPos ++] = kar;
+        ttys [line] . buffer [ttys [line] . nPos] = 0;
         int hsla_line_num = ttys [line] . fmti -> multics . hsla_line_num;
         sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, true);
         ttys [line] . nPos = 0;
@@ -565,7 +575,9 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
     // buffer too full for anything more or we reach our buffer threshold?
     int inputBufferSize =  MState . line [hsla_line_num].inputBufferSize;
     
-    if (tty->nPos >= sizeof(tty->buffer) || tty->nPos >= inputBufferSize)
+    //if (tty->nPos >= sizeof(tty->buffer) || tty->nPos >= inputBufferSize)
+    // 2 --> the current char plus a '\0'
+    if (tty->nPos >= sizeof(tty->buffer) - 2)
     {
         sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, false);
         tty->nPos = 0;
@@ -585,10 +597,11 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
 //                
         case '\n':          // NL
         case '\r':          // CR
+        case '\f':          // FF
         case 0x03:          // ETX (^C)
             kar = '\n';     // translate to NL
-            tty->buffer[tty->nPos] = kar;
-            tty->nPos += 1;
+            tty->buffer[tty->nPos++] = kar;
+            tty->buffer[tty->nPos] = 0;
             sendInputLine (hsla_line_num, ttys [line] . buffer, ttys [line] . nPos, true);
             tty->nPos = 0;
             tty->buffer[tty->nPos] = 0;
@@ -596,90 +609,44 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
             
         case '\b':  // backspace
         case 127:   // delete
-            if (MState . line [hsla_line_num].erkl)
+            //if (MState . line [hsla_line_num].erkl)
             {
                 if (tty->nPos > 0)
                 {
                     tmxr_linemsg(tmln, "\b \b");    // remove char from line
-                    tty->buffer[tty->nPos] = 0;     // remove char from buffer
                     tty->nPos -= 1;                 // back up buffer pointer
+                    tty->buffer[tty->nPos] = 0;     // remove char from buffer
                 } else
                     tmxr_linemsg(tmln, "\a");
             }
-            break;
+            return;
             
         case 21:    // ^U kill
-            if (MState . line [hsla_line_num].erkl)
+            //if (MState . line [hsla_line_num].erkl)
             {
                 tty->nPos = 0;
                 tty->buffer[tty->nPos] = 0;
-                tmxr_linemsg(tmln, "^U");
-                
-                return;
+                tmxr_linemsg(tmln, "^U\r\n");
             }
+            return;
      
-//                return eEndOfLine;              // EOL found
-//
-//            case 0x12:  // ^R
-//                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
-//                //tmxr_linemsgf (tmln, PROMPT, getDevList());
-//                tmxr_linemsg  (tmln, tty->buffer);
-//                break;
-//                
-//            default:
-//                break;
+        case 0x12:  // ^R
+            tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
+            //tmxr_linemsgf (tmln, PROMPT, getDevList());
+            tmxr_linemsg  (tmln, tty->buffer);
+            return;
+                
+        default:
+            break;
     }
     
-    if (isprint(kar))   // printable?
-    {
-        // if half duplex, echo back to MUX line
-        if (!(MState . line [hsla_line_num] .fullDuplex))
-            MuxWrite(line, kar);
+    // if half duplex, echo back to MUX line
+    if (!(MState . line [hsla_line_num] .fullDuplex))
+        MuxWrite(line, kar);
     
-        tty->buffer[tty->nPos++] = kar;
-    } else {
-        switch (kar)
-        {
-//            case '\b':  // backspace
-//            case 127:   // delete
-//                if (MState . line [hsla_line_num].erkl)
-//                {
-//                    if (tty->nPos > 0)
-//                    {
-//                        tmxr_linemsg(tmln, "\b \b");    // remove char from line
-//                        tty->buffer[tty->nPos] = 0;     // remove char from buffer
-//                        tty->nPos -= 1;                 // back up buffer pointer
-//                    } else
-//                        tmxr_linemsg(tmln, "\a");
-//                }
-//                break;
-//                
-//            case '\n':
-//            case '\r':
-//                tty->buffer[tty->nPos] = 0;
-//                return;
-//               
-//            case 21:    // ^U kill
-//                if (MState . line [hsla_line_num].erkl)
-//                {
-//                    tty->nPos = 0;
-//                    tty->buffer[0] = 0;
-//                    tmxr_linemsg(tmln, "^U");
-//                }
-//            case 0x12:  // ^R
-//                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
-//                tmxr_linemsgf (tmln, PROMPT, getDevList());
-//                tty->buffer[tty->nPos] = 0;
-//                tmxr_linemsg  (tmln, tty->buffer);
-//                break;
-                
-                
-            default:
-                break;
-        }
+    tty->buffer[tty->nPos++] = kar;
+    tty->buffer[tty->nPos] = 0;
         
-    }
-   
     return ;  // stay in input mode
 
   }
