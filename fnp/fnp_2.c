@@ -598,7 +598,6 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
         case '\n':          // NL
         case '\r':          // CR
         case '\f':          // FF
-        case 0x03:          // ETX (^C)
             kar = '\n';     // translate to NL
             tty->buffer[tty->nPos++] = kar;
             tty->buffer[tty->nPos] = 0;
@@ -607,6 +606,14 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
             tty->buffer[tty->nPos] = 0;
             return;
             
+        case 0x03:          // ETX (^C) // line break
+            {
+                char buf [256];
+                sprintf (buf, "line_break %d 1 0", hsla_line_num);
+                tellCPU (0, buf);
+            }
+            return;
+
         case '\b':  // backspace
         case 127:   // delete
             //if (MState . line [hsla_line_num].erkl)

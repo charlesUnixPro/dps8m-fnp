@@ -172,6 +172,15 @@ Commands sent from dps8m to fFNP:
                 Second parameter is the suspend string.
                 Third parameter is resume string.
 
+            "set_framing_chars %d %d %d"
+                Set framing characters for block mode xfers.
+                First parameter is line number (0-31) of a HSLA line.
+                Second parameter is the frame begin character.
+                Third parameter is frame end character.
+
+            "dumpoutput %d"
+                Parameter is line number (0-31) of a HSLA line.
+
     tellDPS8 (char * command)
 
         command:

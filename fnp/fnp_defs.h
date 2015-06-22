@@ -240,6 +240,8 @@ typedef struct
         char outputSuspendStr [4];
         int outputResumeLen;
         char outputResumeStr [4];
+        int frame_begin;
+        int frame_end;
       } line [MAX_LINES];
   } t_MState;
 extern t_MState MState;

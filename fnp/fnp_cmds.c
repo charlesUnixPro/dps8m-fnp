@@ -656,7 +656,7 @@ t_stat dequeue_fnp_command (void)
           }
         * q ++ = 0;
 
-//ipc_printf ("clean:<%s>\n", clean);
+//ipc_printf ("clean:<%s>\r\n", clean);
         int muxLineNum = MState . line [p1] . muxLineNum;
         tmxr_linemsg (& mux_ldsc [muxLineNum], clean);
         free (data);
@@ -720,6 +720,42 @@ t_stat dequeue_fnp_command (void)
           }
         memcpy (MState . line [p1] . outputResumeStr, data, retSize);
         MState . line [p1] . outputResumeLen = retSize;
+
+
+
+
+    } else if (strcmp(keyword, "set_framing_chars") == 0)
+    {
+        int p1, d1, d2;
+        int n = sscanf(arg3, "%*s %d %d %d", &p1, &d1, &d2);
+        if (n != 3)
+            goto scpe_arg;
+        //ipc_printf("received set_delay_table %d %d %d %d %d %d %d...\n", p1, d1, d2, d3, d4, d5, d6);
+        if (p1 < 0 && p1 >= MAX_LINES)
+        {
+            ipc_printf("err: set_delay_table p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
+            goto scpe_arg;
+        }
+        MState . line [p1] . frame_begin = d1;
+        MState . line [p1] . frame_end = d2;
+        // XXX ignored
+
+
+
+    } else if (strcmp(keyword, "dumpoutput") == 0)
+    {
+        int p1;
+        int n = sscanf(arg3, "%*s %d", &p1);
+        if (n != 1)
+            goto scpe_arg;
+        //ipc_printf("received dumpoutput %d...\n", p1);
+        if (p1 < 0 && p1 >= MAX_LINES)
+        {
+            ipc_printf("err: set_delay_table p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
+            goto scpe_arg;
+        }
+        // XXX ignored
+
 
 
     } else {
