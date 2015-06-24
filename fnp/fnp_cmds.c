@@ -27,7 +27,7 @@ static char * unpack (char * buffer, int which, size_t * retSize)
         p += 5; // strlen ("data:");
       }
     char * q;
-    int nBytes = strtol (p, & q, 10);
+    int nBytes = (int)strtol (p, & q, 10);
     if (p == q)
       return NULL;
     if (* q != ':')
