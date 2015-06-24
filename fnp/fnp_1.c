@@ -80,6 +80,9 @@ t_stat OnMuxDisconnect(int line, int why)
         MState.line[hsla_line_num].muxLineNum = -1;
         
         // TODO for CAC: send a "line_disconnected" to Multics
+        char msg [256];
+        sprintf (msg, "line_disconnected %d", hsla_line_num);
+        tellCPU (0, msg);
     }
     tty->fmti = NULL;               // line no longer connected to a multics device
     

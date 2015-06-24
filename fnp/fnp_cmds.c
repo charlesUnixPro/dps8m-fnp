@@ -683,7 +683,8 @@ t_stat dequeue_fnp_command (void)
             goto scpe_arg;
         }
         int muxLineNum = MState.line[p1].muxLineNum;
-        tmxr_linemsg(ttys[muxLineNum].tmln, "Multics has disconnected you\r\n");
+        if (muxLineNum >= 0)
+          tmxr_linemsg(ttys[muxLineNum].tmln, "Multics has disconnected you\r\n");
 
         char msg [256];
         sprintf (msg, "line_disconnected %d", p1);
