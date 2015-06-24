@@ -60,9 +60,12 @@ void MUXDisconnectAll()
 /*
  * called when a MUX line is disconnected from a telnet client. (Happens after sending a char to the disconnected line.)
  */
-t_stat OnMuxDisconnect(int line, int kar)
+t_stat OnMuxDisconnect(int line, int why)
 {
-    sim_printf("%s DISCONNECT %d\n", Now(), line);
+    if (why == 0)
+        sim_printf("%s DISCONNECT %d\n", Now(), line);
+    else
+        sim_printf("%s DROPPED %d\n", Now(), line);
 
     MUXTERMIO *tty = &ttys[line];   // fetch tty connection info
     tty->mux_line = -1;             // line no longer connected

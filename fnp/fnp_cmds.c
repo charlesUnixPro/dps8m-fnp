@@ -113,6 +113,7 @@ t_stat fnp_command(char *nodename, char *id, char *arg3)
         DL_APPEND (fnpQueue, element);
       }
     pthread_mutex_unlock (& fnpMQlock);
+      return SCPE_OK;
   }
 
 t_stat dequeue_fnp_command (void)

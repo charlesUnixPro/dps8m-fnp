@@ -432,7 +432,7 @@ int mux_tmxr_putc( int line, TMLN * lp, int kar )
         MUX_LINE_CLEAR_BIT( line, MUX_L_TXDN )
         MUX_LINE_TX_CHAR( line ) = kar ;
         
-        OnMuxDisconnect(line, kar);
+        OnMuxDisconnect(line, 0);   // was 'kar');
     }
     return ( a ) ;
 }
@@ -618,6 +618,19 @@ t_stat mux_svc(UNIT * unitp )
     mux_update_status( dibp, &mux_desc ) ;              /*  update device status                */
     
     sim_activate( unitp, mux_tmxr_poll ) ;              /*  restart the bubble machine          */
+    
+    // check for any dropped connections ...
+    TMXR *mp = &mux_desc;
+    for (int i = 0; i < mp->lines; i++) {               /* loop thru lines */
+        MUXTERMIO *tty = &ttys[i];                      // fetch tty connection info
+        if (tty->state != eDisconnected)
+        {
+            TMLN *lp = tty->tmln;
+            if (!lp->sock && !lp->conn)                 /*  not connected */
+                OnMuxDisconnect(i, 1);                  // connection dropped
+        }
+    }
+    
     return ( SCPE_OK ) ;
 }
 
