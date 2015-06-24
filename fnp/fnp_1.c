@@ -71,18 +71,21 @@ t_stat OnMuxDisconnect(int line, int why)
     tty->mux_line = -1;             // line no longer connected
     tty->state = eDisconnected;
 
-    int hsla_line_num = tty->fmti->multics.hsla_line_num;
-
+    
     if (tty->fmti)
+    {
         tty->fmti->inUse = false;   // multics device no longer in use
+
+        int hsla_line_num = tty->fmti->multics.hsla_line_num;
+        MState.line[hsla_line_num].muxLineNum = -1;
+        
+        // TODO for CAC: send a "line_disconnected" to Multics
+    }
     tty->fmti = NULL;               // line no longer connected to a multics device
     
     tty->nPos = 0;                  // nothing left in the buffer
     tty->buffer[0] = '\0';
     
-    MState.line[hsla_line_num].muxLineNum = -1;
-    // TODO for CAC: send a "line_disconnected" to Multics
-
     return SCPE_OK;
 }
 
