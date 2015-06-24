@@ -136,13 +136,13 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
                         sim_printf("%s LINE %d CONNECTED AS %s\n", Now(), line, q->multics.name);
                         if (! MState.accept_calls)
                         {
-                            tmxr_linemsg (tmln, "Multics is not accepting calls\r\n");
+                            tmxr_linemsg_stall (tmln, "Multics is not accepting calls\r\n");
                             break;
                         } else {
                             int hsla_line_num = tty->fmti->multics.hsla_line_num; 
                             if (! MState.line[hsla_line_num] . listen)
                             {
-                                tmxr_linemsg (tmln, "Multics is not listening to this line\r\n");
+                                tmxr_linemsg_stall (tmln, "Multics is not listening to this line\r\n");
                                 break;
                             }
                         }
@@ -170,13 +170,13 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
         case ePassThrough:
             if (! MState.accept_calls)
             {
-                tmxr_linemsg (tmln, "Multics is not accepting calls\r\n");
+                tmxr_linemsg_stall (tmln, "Multics is not accepting calls\r\n");
                 break;
             }
             int hsla_line_num = tty->fmti->multics.hsla_line_num; 
             if (! MState.line[hsla_line_num] . listen)
             {
-                tmxr_linemsg (tmln, "Multics is not listening to this line\r\n");
+                tmxr_linemsg_stall (tmln, "Multics is not listening to this line\r\n");
                 break;
             }
 

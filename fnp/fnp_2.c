@@ -353,7 +353,7 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
         {
             case '\b':  // backspace
             case 127:   // delete
-                tmxr_linemsg(tmln, "\b \b");    // remove char from line
+                tmxr_linemsg_stall(tmln, "\b \b");    // remove char from line
                 tty->buffer[tty->nPos] = 0;     // remove char from buffer
                 tty->nPos -= 1;                 // back up buffer pointer
                 break;
@@ -364,9 +364,9 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
                 return eEndOfLine;              // EOL found
 
             case 0x12:  // ^R
-                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
+                tmxr_linemsg_stall  (tmln, "^R\r\n");       // echo ^R
                 tmxr_linemsgf (tmln, PROMPT, getDevList());
-                tmxr_linemsg  (tmln, tty->buffer);
+                tmxr_linemsg_stall  (tmln, tty->buffer);
                 break;
                 
             default:
@@ -386,11 +386,11 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
             case 127:   // delete
                 if (tty->nPos > 0)
                 {
-                    tmxr_linemsg(tmln, "\b \b");    // remove char from line
+                    tmxr_linemsg_stall(tmln, "\b \b");    // remove char from line
                     tty->buffer[tty->nPos] = 0;     // remove char from buffer
                     tty->nPos -= 1;                 // back up buffer pointer
                 } else
-                    tmxr_linemsg(tmln, "\a");
+                    tmxr_linemsg_stall(tmln, "\a");
                 
                 break;
                 
@@ -400,10 +400,10 @@ MUXTERMSTATE processUserInput(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, 
                 return eEndOfLine;
                 
             case 0x12:  // ^R
-                tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
+                tmxr_linemsg_stall  (tmln, "^R\r\n");       // echo ^R
                 tmxr_linemsgf (tmln, PROMPT, getDevList());
                 tty->buffer[tty->nPos] = 0;
-                tmxr_linemsg  (tmln, tty->buffer);
+                tmxr_linemsg_stall  (tmln, tty->buffer);
                 break;
 
                 
@@ -590,7 +590,7 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
     {
 //            case '\b':  // backspace
 //            case 127:   // delete
-//                tmxr_linemsg(tmln, "\b \b");    // remove char from line
+//                tmxr_linemsg_stall(tmln, "\b \b");    // remove char from line
 //                tty->buffer[tty->nPos] = 0;     // remove char from buffer
 //                tty->nPos -= 1;                 // back up buffer pointer
 //                break;
@@ -620,11 +620,11 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
             {
                 if (tty->nPos > 0)
                 {
-                    tmxr_linemsg(tmln, "\b \b");    // remove char from line
+                    tmxr_linemsg_stall(tmln, "\b \b");    // remove char from line
                     tty->nPos -= 1;                 // back up buffer pointer
                     tty->buffer[tty->nPos] = 0;     // remove char from buffer
                 } else
-                    tmxr_linemsg(tmln, "\a");
+                    tmxr_linemsg_stall(tmln, "\a");
             }
             return;
             
@@ -633,14 +633,14 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
             {
                 tty->nPos = 0;
                 tty->buffer[tty->nPos] = 0;
-                tmxr_linemsg(tmln, "^U\r\n");
+                tmxr_linemsg_stall(tmln, "^U\r\n");
             }
             return;
      
         case 0x12:  // ^R
-            tmxr_linemsg  (tmln, "^R\r\n");       // echo ^R
+            tmxr_linemsg_stall  (tmln, "^R\r\n");       // echo ^R
             //tmxr_linemsgf (tmln, PROMPT, getDevList());
-            tmxr_linemsg  (tmln, tty->buffer);
+            tmxr_linemsg_stall  (tmln, tty->buffer);
             return;
                 
         default:
@@ -659,3 +659,20 @@ void processInputCharacter(TMXR *mp, TMLN *tmln, MUXTERMIO *tty, int32 line, int
   }
 
 
+// XXX Bad code -- blocks the thread
+
+void tmxr_linemsg_stall (TMLN *lp, char *msg)
+  {
+    int32 len;
+
+    for (len = (int32)strlen (msg); len > 0; --len)
+      {
+        while (SCPE_STALL == tmxr_putc_ln (lp, *msg))
+          {
+            if (lp->txbsz == tmxr_send_buffered_data (lp))
+              usleep (100); // 10 ms
+          }
+        msg ++;
+      }
+    return;
+  }

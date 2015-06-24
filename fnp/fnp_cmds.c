@@ -146,7 +146,7 @@ t_stat dequeue_fnp_command (void)
             int muxLineNum = MState.line[p1].muxLineNum;
             if (muxLineNum != -1)
             {
-                tmxr_linemsg(ttys[muxLineNum].tmln, "The FNP has been restarted\r\n");
+                tmxr_linemsg_stall(ttys[muxLineNum].tmln, "The FNP has been restarted\r\n");
             }
         }
 
@@ -191,7 +191,7 @@ t_stat dequeue_fnp_command (void)
             int muxLineNum = MState.line[p1].muxLineNum;
             if (muxLineNum != -1 && ttys[muxLineNum].state == ePassThrough)
             {
-                tmxr_linemsg(ttys[muxLineNum].tmln, "Multics is now listening to this line\r\n");
+                tmxr_linemsg_stall(ttys[muxLineNum].tmln, "Multics is now listening to this line\r\n");
                 char buf [256];
                 sprintf (buf, "accept_new_terminal %d 1 0", p1);
                 tellCPU (0, buf);
@@ -659,7 +659,7 @@ t_stat dequeue_fnp_command (void)
 
 //ipc_printf ("clean:<%s>\r\n", clean);
         int muxLineNum = MState . line [p1] . muxLineNum;
-        tmxr_linemsg (& mux_ldsc [muxLineNum], clean);
+        tmxr_linemsg_stall (& mux_ldsc [muxLineNum], clean);
         free (data);
         free (clean);
         char msg [256];
@@ -684,7 +684,7 @@ t_stat dequeue_fnp_command (void)
         }
         int muxLineNum = MState.line[p1].muxLineNum;
         if (muxLineNum >= 0)
-          tmxr_linemsg(ttys[muxLineNum].tmln, "Multics has disconnected you\r\n");
+          tmxr_linemsg_stall(ttys[muxLineNum].tmln, "Multics has disconnected you\r\n");
 
         char msg [256];
         sprintf (msg, "line_disconnected %d", p1);

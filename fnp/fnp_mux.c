@@ -407,12 +407,23 @@ int mux_tmxr_putc( int line, TMLN * lp, int kar )
     /*              SCPE_LOST                       */
     /*----------------------------------------------*/
     
+#if 0
     a = tmxr_putc_ln( lp, kar ) ;
+#else
+// XXX bad code; blocks the thread
+    while (SCPE_STALL == tmxr_putc_ln (lp, kar))
+      {
+        if (lp->txbsz == tmxr_send_buffered_data (lp))
+          usleep (100); // 10 ms
+      }
+
+#endif
     if ( a == SCPE_OK)
     {
         MUX_LINE_SET_BIT(   line, MUX_L_TXDN )
         MUX_LINE_CLEAR_BIT( line, MUX_L_TXBZ )
     }
+#if 0
     else if ( a == SCPE_STALL )
     {
         /*
@@ -425,6 +436,7 @@ int mux_tmxr_putc( int line, TMLN * lp, int kar )
     
         OnMuxStalled(line, kar);
     }
+#endif
     else if ( a == SCPE_LOST )
     {
         /*  no connection - hangup?  */
