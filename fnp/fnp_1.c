@@ -196,7 +196,7 @@ t_stat OnMuxRx(TMXR *mp, TMLN *tmln, int line, int kar)
  */
 t_stat OnMuxRxBreak(int line, int kar)
 {
-    sim_printf("%s Rx (BREAK): line:%d\n", Now(), line, kar);
+    sim_printf("%s Rx (BREAK): line:%d %03o\n", Now(), line, kar);
     
     return SCPE_OK;
 }

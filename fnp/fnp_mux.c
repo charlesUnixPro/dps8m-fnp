@@ -411,7 +411,7 @@ int mux_tmxr_putc( int line, TMLN * lp, int kar )
     a = tmxr_putc_ln( lp, kar ) ;
 #else
 // XXX bad code; blocks the thread
-    while (SCPE_STALL == tmxr_putc_ln (lp, kar))
+    while (SCPE_STALL == (a = tmxr_putc_ln (lp, kar)))
       {
         if (lp->txbsz == tmxr_send_buffered_data (lp))
           usleep (100); // 10 ms
