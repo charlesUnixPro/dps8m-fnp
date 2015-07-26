@@ -181,6 +181,8 @@ Commands sent from dps8m to fFNP:
             "dumpoutput %d"
                 Parameter is line number (0-31) of a HSLA line.
 
+            "set_echnego_break_table %d %o %o %o %o %o %o %o %o %o %o %o %o %o %o %o"
+
     tellDPS8 (char * command)
 
         command:

@@ -12,6 +12,7 @@
 #ifndef mux_mux_defs_h
 #define mux_mux_defs_h
 
+#include <stdbool.h>
 #include "sim_defs.h"
 #include "sim_tmxr.h"
 
@@ -242,6 +243,7 @@ typedef struct
         char outputResumeStr [4];
         int frame_begin;
         int frame_end;
+        bool echnego [256];
       } line [MAX_LINES];
   } t_MState;
 extern t_MState MState;
