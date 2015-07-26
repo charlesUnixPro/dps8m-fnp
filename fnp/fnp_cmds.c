@@ -42,7 +42,7 @@ static char * unpack (char * buffer, int which, size_t * retSize)
     if (! out)
       goto fail;
     char * o = out;
-    int remaining = nBytes; 
+    int remaining = nBytes;
     while (remaining --)
       {
         int val;
