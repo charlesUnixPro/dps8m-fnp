@@ -754,10 +754,14 @@ t_stat dequeue_fnp_command (void)
         //ipc_printf("received dumpoutput %d...\n", p1);
         if (p1 < 0 && p1 >= MAX_LINES)
         {
-            ipc_printf("err: set_delay_table p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
+            ipc_printf("err: dumpoutput p1 (%d) != [0..%d]\n", p1, MAX_LINES - 1);
             goto scpe_arg;
         }
         // XXX ignored
+        char msg [256];
+        sprintf (msg, "send_output %d", p1);
+//ipc_printf ("tell CPU to send_output\n");
+        tellCPU (0, msg);
 
 
 
@@ -874,5 +878,11 @@ void sendInputLine (int hsla_line_num, char * buffer, int nChars, bool isBreak)
         tellCPU (0, cmd);
         offset += thisSize;
         remaining -= thisSize;
+
+
+        char msg [256];
+        sprintf (msg, "send_output %d", hsla_line_num);
+//ipc_printf ("tell CPU to send_output\n");
+        tellCPU (0, msg);
       }
   }
